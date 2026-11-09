@@ -32,3 +32,6 @@ desktop.ini
 *.log
 *.tmp
 *.bak
+
+# Local agent bridge state
+.agent-bridge-data/
