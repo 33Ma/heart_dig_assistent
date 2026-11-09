@@ -85,6 +85,7 @@ class ChineseKnowledgeBase:
                 continue
             metadata = dict(record.get("metadata") or {})
             metadata.setdefault("source", f"导入语料/{path.name}")
+            metadata.setdefault("source_group", "corpus")
             metadata.setdefault("evidence_level", "literature_catalog")
             metadata.setdefault("version", "1.0")
             doc_id = str(record.get("doc_id") or f"{path.stem}-{number}")
@@ -123,7 +124,7 @@ class ChineseKnowledgeBase:
             "statistical_limits": "统计解释边界",
             "medical_data_safety": "医疗数据安全",
         }
-        return {"domain": domains.get(path.stem, "心脏风险分析"), "source": f"本地知识库/{path.name}", "evidence_level": "internal_summary", "jurisdiction": "通用科研说明，临床和法规要求以机构规定为准", "approved": "pending_review", "version": "1.0"}
+        return {"domain": domains.get(path.stem, "心脏风险分析"), "source": f"本地知识库/{path.name}", "source_group": "builtin", "evidence_level": "internal_summary", "jurisdiction": "通用科研说明，临床和法规要求以机构规定为准", "approved": "pending_review", "version": "1.0"}
 
     def retrieve(self, query: str, *, top_k: int = 4, bm25_weight: float = 0.55, min_score: float = 0.15):
         candidates = max(top_k * 3, 8)
@@ -150,7 +151,11 @@ class ChineseKnowledgeBase:
 
     @property
     def retrieval_status(self) -> dict[str, object]:
-        return {"vector_backend": self.vector_index.backend, "fallback_reason": self.vector_index.fallback_reason, "reranker_backend": self.reranker_backend, "reranker_error": getattr(self, "reranker_error", None), "document_count": len(self.index.documents), "quality_issues": list(self.quality_issues)}
+        source_counts: dict[str, int] = {}
+        for document in self.index.documents:
+            group = str((document.metadata or {}).get("source_group", "unknown"))
+            source_counts[group] = source_counts.get(group, 0) + 1
+        return {"vector_backend": self.vector_index.backend, "fallback_reason": self.vector_index.fallback_reason, "reranker_backend": self.reranker_backend, "reranker_error": getattr(self, "reranker_error", None), "document_count": len(self.index.documents), "source_counts": source_counts, "quality_issues": list(self.quality_issues)}
 
     def format_context(self, query: str, *, top_k: int = 4) -> str:
         hits = self.retrieve(query, top_k=top_k)
