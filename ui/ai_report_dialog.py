@@ -3,24 +3,33 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import datetime, timezone
+import inspect
+import os
+from pathlib import Path
 
 from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
+    QDialogButtonBox,
+    QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QInputDialog,
+    QProgressBar,
     QPushButton,
+    QSlider,
     QTextEdit,
     QVBoxLayout,
 )
 
 from ai.providers import PROVIDER_PRESETS
 from ai.report_generator import AIReportCancelled, AIReportError, AIReportService
+from ai.security_settings import load_security_settings, save_security_settings
 from ui.dashboard_data import DashboardData
 from ui.markdown_viewer import MarkdownViewer
 
@@ -108,6 +117,7 @@ class AIReportWorker(QObject):
     completed = Signal(str)
     failed = Signal(str)
     cancelled = Signal()
+    progress = Signal(dict)
 
     def __init__(
         self,
@@ -130,13 +140,16 @@ class AIReportWorker(QObject):
     def run(self):
         thread = QThread.currentThread()
         try:
+            kwargs = {"cancel_requested": thread.isInterruptionRequested}
+            parameters = inspect.signature(self.service.generate).parameters
+            if "progress_callback" in parameters:
+                kwargs["progress_callback"] = self.progress.emit
+            if "safety_mode" in parameters:
+                security = load_security_settings()
+                kwargs["safety_mode"] = security["mode"]
+                kwargs["safety_strength"] = security["strength"]
             text = self.service.generate(
-                self.record,
-                self.provider,
-                self.api_key,
-                self.model,
-                self.instruction,
-                cancel_requested=thread.isInterruptionRequested,
+                self.record, self.provider, self.api_key, self.model, self.instruction, **kwargs
             )
         except AIReportCancelled:
             self.cancelled.emit()
@@ -152,12 +165,17 @@ class AIReportDialog(QDialog):
     def __init__(self, record, parent=None, *, service: AIReportService | None = None):
         super().__init__(parent)
         self.record = record
-        # 本地知识库可按需注入。默认关闭向量模型初始化，首次点击报告时立即进入可用状态。
-        self.service = service or AIReportService(retrieval_enabled=False)
+        # 本地心脏风险知识库在后台线程懒加载，向量模型不可用时自动回退到哈希检索。
+        self.service = service or AIReportService(retrieval_enabled=True)
         self.result_text: str | None = None
         self._thread: QThread | None = None
         self._worker: AIReportWorker | None = None
         self._close_when_stopped = False
+        self.approval_status = "pending_review"
+        self.report_version = "1.0"
+        self.rejection_reason = ""
+        self.reviewer = ""
+        self.reviewed_at: str | None = None
 
         self.setWindowTitle("CardioScope · AI 分析报告")
         self.setMinimumSize(820, 640)
@@ -196,6 +214,22 @@ class AIReportDialog(QDialog):
         self.key_edit.setEchoMode(QLineEdit.Password)
         self.key_edit.setPlaceholderText("输入 API Key；也支持读取供应商对应环境变量")
         form.addRow(self._label("API Key", 10, "#53677B", 700), self.key_edit)
+        security = load_security_settings()
+        self.security_mode_combo = QComboBox()
+        self.security_mode_combo.addItem("硬阻断高风险报告", "hard_block")
+        self.security_mode_combo.addItem("仅标记，转人工复核", "human_review")
+        self.security_mode_combo.setCurrentIndex(0 if security["mode"] == "hard_block" else 1)
+        self.security_mode_combo.currentIndexChanged.connect(self._save_security_settings)
+        form.addRow(self._label("高风险处理", 10, "#53677B", 700), self.security_mode_combo)
+        security_row = QHBoxLayout()
+        self.security_strength_slider = QSlider(Qt.Horizontal)
+        self.security_strength_slider.setRange(0, 100)
+        self.security_strength_slider.setValue(int(security["strength"]))
+        self.security_strength_slider.valueChanged.connect(self._save_security_settings)
+        self.security_strength_label = self._label("", 9, "#7C8B9D")
+        security_row.addWidget(self.security_strength_slider, 1)
+        security_row.addWidget(self.security_strength_label)
+        form.addRow(self._label("安全对齐强度", 10, "#53677B", 700), security_row)
         root.addLayout(form)
 
         root.addWidget(self._label("报告要求（可选）", 10, "#53677B", 700))
@@ -210,6 +244,20 @@ class AIReportDialog(QDialog):
         root.addWidget(self.result_edit, 1)
         self.status_label = self._label("", 9, "#C24545")
         root.addWidget(self.status_label)
+        progress_row = QHBoxLayout()
+        self.agent_progress_label = self._label("等待 Agent 编排", 9, "#60758A")
+        progress_row.addWidget(self.agent_progress_label, 1)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedWidth(190)
+        self.progress_bar.setStyleSheet(
+            "QProgressBar { background: #DDE7F0; border: none; border-radius: 4px; height: 8px; }"
+            "QProgressBar::chunk { background: #1F6FE5; border-radius: 4px; }"
+        )
+        progress_row.addWidget(self.progress_bar)
+        root.addLayout(progress_row)
 
         actions = QHBoxLayout()
         actions.addStretch(1)
@@ -239,6 +287,26 @@ class AIReportDialog(QDialog):
         )
         self.clear_button.clicked.connect(self.clear_result)
         actions.addWidget(self.clear_button)
+        self.approve_button = QPushButton("通过审核")
+        self.approve_button.setFixedSize(96, 36)
+        self.approve_button.clicked.connect(self.approve_report)
+        self.approve_button.setEnabled(False)
+        actions.addWidget(self.approve_button)
+        self.revise_button = QPushButton("修订报告")
+        self.revise_button.setFixedSize(96, 36)
+        self.revise_button.clicked.connect(self.revise_report)
+        self.revise_button.setEnabled(False)
+        actions.addWidget(self.revise_button)
+        self.reject_button = QPushButton("退回")
+        self.reject_button.setFixedSize(72, 36)
+        self.reject_button.clicked.connect(self.reject_report)
+        self.reject_button.setEnabled(False)
+        actions.addWidget(self.reject_button)
+        self.export_button = QPushButton("导出 Markdown")
+        self.export_button.setFixedSize(110, 36)
+        self.export_button.clicked.connect(self.export_report)
+        self.export_button.setEnabled(False)
+        actions.addWidget(self.export_button)
         self.generate_button = QPushButton("生成分析报告")
         self.generate_button.setFixedSize(126, 36)
         self.generate_button.setCursor(Qt.PointingHandCursor)
@@ -247,6 +315,7 @@ class AIReportDialog(QDialog):
         actions.addWidget(self.generate_button)
         root.addLayout(actions)
         self._provider_changed(self.provider_combo.currentText())
+        self._save_security_settings()
 
     @staticmethod
     def _label(text, size, color, weight=400):
@@ -262,13 +331,31 @@ class AIReportDialog(QDialog):
         self.model_combo.addItems(list(config.models))
         self.key_edit.setText(self.service.api_key_from_env(name))
 
+    def _save_security_settings(self):
+        strength = self.security_strength_slider.value()
+        save_security_settings(
+            mode=str(self.security_mode_combo.currentData()),
+            strength=strength,
+        )
+        self.security_strength_label.setText(
+            f"{strength}（≥50 时硬阻断生效）"
+        )
+
     # ------------------------------------------------------------ generation
     def clear_result(self):
         """Clear the current Markdown result so another report can be generated."""
         if self.is_running():
             return
         self.result_text = None
+        self.approval_status = "pending_review"
+        self.report_version = "1.0"
+        self.rejection_reason = ""
+        self.reviewer = ""
+        self.reviewed_at = None
+        self._set_review_buttons(False)
         self.result_edit.clear()
+        self.progress_bar.setValue(0)
+        self.agent_progress_label.setText("等待 Agent 编排")
         self._set_status("已清空报告内容，可再次生成。", "#7C8B9D")
 
     def generate_report(self):
@@ -282,7 +369,15 @@ class AIReportDialog(QDialog):
             self._set_status("请先填写 API Key，或在环境变量中配置对应密钥。", "#C24545")
             return
         self.result_text = None
+        self.approval_status = "pending_review"
+        self.report_version = "1.0"
+        self.rejection_reason = ""
+        self.reviewer = ""
+        self.reviewed_at = None
+        self._set_review_buttons(False)
         self.result_edit.clear()
+        self.progress_bar.setValue(0)
+        self.agent_progress_label.setText("正在启动 Agent 编排…")
         self._set_status("正在请求模型，请稍候…", "#2B6EDE")
         self._set_running(True)
 
@@ -300,6 +395,7 @@ class AIReportDialog(QDialog):
         worker.completed.connect(self._on_completed)
         worker.failed.connect(self._on_failed)
         worker.cancelled.connect(self._on_cancelled)
+        worker.progress.connect(self._on_progress)
         worker.completed.connect(thread.quit)
         worker.failed.connect(thread.quit)
         worker.cancelled.connect(thread.quit)
@@ -321,16 +417,126 @@ class AIReportDialog(QDialog):
     @Slot(str)
     def _on_completed(self, text: str):
         self.result_text = text
+        self.approval_status = "blocked" if "## 安全硬阻断" in text else "pending_review"
+        self.report_version = "1.0"
+        self.rejection_reason = ""
+        self.reviewer = ""
+        self.reviewed_at = None
         self.result_edit.set_markdown(text)
-        self._set_status("报告生成完成，已用 Markdown 阅读器渲染。", "#0B8B64")
+        if self.approval_status == "blocked":
+            self._set_status("检测到高风险内容，报告已硬阻断，禁止审批和导出。", "#C24545")
+            self.agent_progress_label.setText("✕ 安全硬阻断 · 禁止审批和导出")
+        elif "## 安全审核提示" in text or "## 机器审核结果" in text:
+            self._set_status("报告已生成，需人工复核后再导出。", "#C24545")
+            self.agent_progress_label.setText("△ 等待人工审核 · 可修订或退回")
+        else:
+            self._set_status("报告生成完成，等待人工审核。", "#0B8B64")
+            self.agent_progress_label.setText("✓ Agent 编排完成 · 等待人工审核")
+        self.progress_bar.setValue(100)
+
+        self._set_review_buttons(self.approval_status != "blocked")
+
+    def _set_review_buttons(self, enabled: bool):
+        self.approve_button.setEnabled(enabled and self.approval_status in {"pending_review", "rejected"})
+        self.revise_button.setEnabled(enabled and bool(self.result_text))
+        self.reject_button.setEnabled(enabled and self.approval_status in {"pending_review", "approved"})
+        self.export_button.setEnabled(enabled and self.approval_status == "approved")
+
+    def approve_report(self):
+        if not self.result_text or self.is_running():
+            return
+        if self.approval_status == "blocked":
+            self._set_status("安全硬阻断报告不可审批或导出。", "#C24545")
+            return
+        self.approval_status = "approved"
+        self.reviewer = os.getenv("CARDIOSCOPE_REVIEWER", "local_user")
+        self.reviewed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        self._set_review_buttons(True)
+        self._set_status("已通过人工审核，可以导出报告。", "#0B8B64")
+
+    def revise_report(self):
+        if not self.result_text or self.is_running() or self.approval_status == "blocked":
+            return
+        editor = QDialog(self)
+        editor.setWindowTitle("修订 AI 报告")
+        editor.resize(760, 560)
+        layout = QVBoxLayout(editor)
+        text_edit = QTextEdit(editor)
+        text_edit.setPlainText(self.result_text)
+        layout.addWidget(text_edit)
+        buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel, parent=editor)
+        buttons.accepted.connect(editor.accept)
+        buttons.rejected.connect(editor.reject)
+        layout.addWidget(buttons)
+        if editor.exec() != QDialog.Accepted:
+            return
+        revised = text_edit.toPlainText().strip()
+        if not revised:
+            self._set_status("修订内容不能为空。", "#C24545")
+            return
+        self.result_text = revised
+        major, minor = (self.report_version.split(".", 1) + ["0"])[:2]
+        self.report_version = f"{major}.{int(minor) + 1}"
+        self.approval_status = "pending_review"
+        self.rejection_reason = ""
+        self.reviewer = ""
+        self.reviewed_at = None
+        self.result_edit.set_markdown(revised)
+        self._set_review_buttons(True)
+        self._set_status(f"已保存人工修订，当前版本 {self.report_version}，请重新审核。", "#2B6EDE")
+
+    def reject_report(self):
+        if not self.result_text or self.is_running() or self.approval_status == "blocked":
+            return
+        reason, ok = QInputDialog.getText(self, "退回 AI 报告", "退回原因（必填）：")
+        reason = reason.strip()
+        if not ok or not reason:
+            return
+        self.approval_status = "rejected"
+        self.rejection_reason = reason
+        self.reviewer = os.getenv("CARDIOSCOPE_REVIEWER", "local_user")
+        self.reviewed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        self._set_review_buttons(True)
+        self._set_status(f"报告已退回：{reason}", "#C24545")
+
+    def export_report(self):
+        if self.approval_status != "approved" or not self.result_text:
+            self._set_status("导出前必须先通过人工审核。", "#C24545")
+            return
+        path, _ = QFileDialog.getSaveFileName(self, "导出 AI 报告", "ai_report.md", "Markdown 文件 (*.md)")
+        if not path:
+            return
+        Path(path).write_text(self.result_text, encoding="utf-8")
+        self._set_status("报告已导出。", "#0B8B64")
 
     @Slot(str)
     def _on_failed(self, message: str):
         self._set_status(message, "#C24545")
+        self.agent_progress_label.setText("✕ Agent 编排已停止，请检查错误信息")
 
     @Slot()
     def _on_cancelled(self):
         self._set_status("已取消本次 AI 报告生成。", "#7C8B9D")
+        self.agent_progress_label.setText("已取消 Agent 编排")
+
+    @Slot(dict)
+    def _on_progress(self, event: dict):
+        kind = event.get("kind")
+        agent = event.get("agent", "报告编排")
+        completed = int(event.get("completed", 0) or 0)
+        total = max(1, int(event.get("total", 1) or 1))
+        if kind == "graph_started":
+            self.agent_progress_label.setText(f"正在启动主管 Agent · 共 {total} 个节点")
+        elif kind == "agent_started":
+            self.agent_progress_label.setText(f"● 正在执行：{agent} · {completed}/{total}")
+        elif kind == "agent_retry":
+            attempt = event.get("attempt", 2)
+            self.agent_progress_label.setText(f"↻ {agent} 第 {attempt} 次重试 · {completed}/{total}")
+        elif kind == "agent_finished":
+            status = event.get("status", "completed")
+            icon = "✓" if status == "completed" else ("△" if status == "degraded" else "✕")
+            self.agent_progress_label.setText(f"{icon} {agent} · {completed}/{total}")
+        self.progress_bar.setValue(min(100, int(completed * 100 / total)))
 
     @Slot()
     def _on_thread_finished(self):
@@ -350,10 +556,17 @@ class AIReportDialog(QDialog):
             self.model_combo,
             self.key_edit,
             self.instruction_edit,
+            self.security_mode_combo,
+            self.security_strength_slider,
         ):
             widget.setEnabled(not running)
         self.generate_button.setEnabled(not running)
         self.clear_button.setEnabled(not running)
+        if running:
+            for button in (self.approve_button, self.revise_button, self.reject_button, self.export_button):
+                button.setEnabled(False)
+        else:
+            self._set_review_buttons(self.approval_status != "blocked")
         self.cancel_button.setVisible(running)
         self.cancel_button.setEnabled(running)
         if running:
