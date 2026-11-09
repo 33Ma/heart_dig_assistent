@@ -8,7 +8,7 @@ panel and a group comparison table.
 
 from __future__ import annotations
 
-from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, Signal
+from PySide6.QtCore import QObject, QPointF, QRectF, QSize, Qt, QThreadPool, QTimer, QRunnable, Signal, Slot
 from PySide6.QtGui import QAction, QColor, QFont, QFontMetrics, QLinearGradient, QPainter, QPalette
 from PySide6.QtWidgets import (
     QAbstractButton,
@@ -38,7 +38,33 @@ from ui.charts import (
 from ui.dashboard_data import DashboardData
 from ui.ai_report_dialog import AIReportDialog, build_cardio_report_record
 from ui.icons import BrandMark, IconWidget, draw_icon, make_icon_pixmap
+from ui.sample_analysis import SAMPLE_STYLESHEET, SampleAnalysisPage
 from ui.theme import COLORS, DEFAULT_FONT, NAV_SECTION, rgba
+from algorithm.dataset import load_dataset
+from algorithm.regression import run_logistic_regression
+from algorithm.random_forest import run_random_forest
+
+
+class _ForestSignals(QObject):
+    finished = Signal(object)
+    failed = Signal(str)
+
+
+class _ForestTask(QRunnable):
+    """Run the optional random-forest page off the Qt UI thread."""
+
+    def __init__(self, dataset, signals: _ForestSignals) -> None:
+        super().__init__()
+        self.dataset = dataset
+        self.signals = signals
+        self.setAutoDelete(True)
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            self.signals.finished.emit(run_random_forest(self.dataset))
+        except Exception as error:  # noqa: BLE001 - reported on the page
+            self.signals.failed.emit(str(error) or type(error).__name__)
 
 NAV_WORKSPACE = (
     ("工作台", "grid"),
@@ -353,6 +379,7 @@ class TopBar(QFrame):
         chip_layout.addWidget(self.dataset_label)
         self.dataset_chip = chip
         layout.addWidget(chip)
+        self.search_box = search_box
 
         self.bell = QPushButton()
         self.bell.setObjectName("dbIcon")
@@ -387,6 +414,12 @@ class TopBar(QFrame):
         )
         self.dataset_label.setToolTip(data.dataset_tooltip or data.dataset)
         self.dataset_chip.setToolTip(data.dataset_tooltip or "点击导入数据集")
+
+    def set_compact(self, compact: bool) -> None:
+        """Use the compact Pixso header for analysis pages."""
+
+        self.search_box.setVisible(not compact)
+        self.dataset_chip.setVisible(not compact)
 
     def _show_account_menu(self) -> None:
         menu = QMenu(self)
@@ -781,6 +814,7 @@ class MainDashboard(QWidget):
         super().__init__(parent)
         self.data = data or DashboardData()
         self._account = ""
+        self._sample_regression_result = None
 
         self.setObjectName("dbRoot")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
@@ -836,6 +870,7 @@ class MainDashboard(QWidget):
         self.data = data
         self.nav.set_data(data)
         self.topbar.set_data(data)
+        self.topbar.set_compact(False)
         self._replace_content(self._dashboard_content())
 
     def show_empty(self, message: str = "") -> None:
@@ -1074,6 +1109,12 @@ class MainDashboard(QWidget):
     def _on_navigate(self, name: str) -> None:
         if name == "工作台":
             self.nav.set_active(name)
+            self.topbar.set_compact(False)
+            self.topbar.set_data(self.data)
+            self._replace_content(self._dashboard_content())
+            return
+        if name == "样本分析":
+            self._show_sample_analysis()
             return
         if name == "数据导入":
             self.nav.set_active("工作台")
@@ -1084,12 +1125,45 @@ class MainDashboard(QWidget):
             self._open_ai_report()
             return
         self._not_ready(name)
+        self.topbar.set_compact(False)
+        self.topbar.set_data(self.data)
         self.nav.set_active("工作台")
+
+    def _show_sample_analysis(self) -> None:
+        """Render the Pixso sample-analysis shell without changing the workbench data."""
+
+        try:
+            dataset = load_dataset()
+            result = run_logistic_regression(dataset, predictors=("cp", "oldpeak"))
+        except Exception as exc:  # pragma: no cover - defensive UI fallback
+            self.nav.set_active("样本分析")
+            self.topbar.set_compact(True)
+            self.topbar.title_label.setText("回归分析")
+            self.topbar.subtitle_label.setText("")
+            self._replace_content(self._placeholder_content(icon="file-text", title="回归分析暂不可用", detail=str(exc), accent=COLORS["danger"]))
+            return
+        self.nav.set_active("样本分析")
+        self.topbar.set_compact(True)
+        self.topbar.title_label.setText("回归分析")
+        self.topbar.subtitle_label.setText("")
+        self._sample_regression_result = result
+        page = SampleAnalysisPage(result)
+        page.regression_changed.connect(self._set_sample_regression_result)
+        page.setStyleSheet(SAMPLE_STYLESHEET)
+        self._replace_content(page)
+        signals = _ForestSignals(page)
+        signals.finished.connect(page.set_forest_result)
+        signals.failed.connect(lambda error: page.set_forest_result(None, error))
+        task = _ForestTask(dataset, signals)
+        QThreadPool.globalInstance().start(task)
+
+    def _set_sample_regression_result(self, result) -> None:
+        self._sample_regression_result = result
 
     def _open_ai_report(self) -> None:
         """Open the provider dialog with the current dashboard results."""
 
-        record = build_cardio_report_record(self.data)
+        record = build_cardio_report_record(self.data, self._sample_regression_result)
         AIReportDialog(record, self).exec()
 
     def _not_ready(self, feature: str) -> None:

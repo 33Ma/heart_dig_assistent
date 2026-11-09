@@ -25,6 +25,23 @@ from algorithm.models import (
     SliceStat,
     WorkbenchPayload,
 )
+from algorithm.regression import (
+    ALGORITHM_VERSION as REGRESSION_ALGORITHM_VERSION,
+    CoefficientStat,
+    FitStat,
+    RegressionError,
+    RegressionResult,
+    ValidationStat,
+    run_logistic_regression,
+)
+from algorithm.nested_validation import NestedCVResult, nested_cross_validate
+from algorithm.random_forest import (
+    ALGORITHM_VERSION as RANDOM_FOREST_ALGORITHM_VERSION,
+    RandomForestError,
+    RandomForestResult,
+    RandomForestValidation,
+    run_random_forest,
+)
 from algorithm.workbench import (
     ALGORITHM_VERSION,
     build_workbench,
@@ -48,7 +65,21 @@ __all__ = [
     "RiskFactorStat",
     "SliceStat",
     "WorkbenchPayload",
+    "CoefficientStat",
+    "FitStat",
+    "RegressionError",
+    "RegressionResult",
+    "ValidationStat",
+    "REGRESSION_ALGORITHM_VERSION",
     "build_workbench",
     "build_workbench_from_csv",
     "load_dataset",
+    "run_logistic_regression",
+    "NestedCVResult",
+    "nested_cross_validate",
+    "RandomForestError",
+    "RandomForestResult",
+    "RandomForestValidation",
+    "RANDOM_FOREST_ALGORITHM_VERSION",
+    "run_random_forest",
 ]

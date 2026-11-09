@@ -467,8 +467,8 @@ class Widget(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("CardioScope 心脏指标分析系统")
-        self.setMinimumSize(1140, 760)
-        self.resize(1440, 900)
+        self.setMinimumSize(1280, 820)
+        self.resize(1600, 1040)
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)

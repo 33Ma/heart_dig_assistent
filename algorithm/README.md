@@ -64,6 +64,13 @@ python -B -m unittest discover -s algorithm/tests -t .
 - `test_workbench_golden`：把设计稿上的数字（303/139/45.9/54.4/131.7/139.3/158.4、
   33.3~58.9、54.1/18.2/27.7、99/45/204/123 等）逐项锁死，同时验证整条链路。
 
+## 随机森林分析
+
+`run_random_forest()` 是独立于 `build_workbench()` 的预测分析接口，默认使用全部特征。
+每个交叉验证训练折内部先以众数填补缺失值，再对分类字段独热编码，最后拟合随机森林，
+因此不会用验证折统计量填补训练数据。结果通过“样本分析 → 随机森林分析”页面查看，
+与 Logistic 回归页面互不覆盖。
+
 ## 扩展
 
 - 新增指标：在 `aggregations.py` 加函数，并把结果加进 `models.WorkbenchPayload`。

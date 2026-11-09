@@ -32,6 +32,7 @@ from ai.report_generator import AIReportCancelled, AIReportError, AIReportServic
 from ai.security_settings import load_security_settings, save_security_settings
 from ui.dashboard_data import DashboardData
 from ui.markdown_viewer import MarkdownViewer
+from algorithm.regression import RegressionResult
 
 
 @dataclass(frozen=True)
@@ -60,7 +61,10 @@ class CardioReportRecord:
     parameters: dict
 
 
-def build_cardio_report_record(data: DashboardData) -> CardioReportRecord:
+def build_cardio_report_record(
+    data: DashboardData,
+    regression: RegressionResult | None = None,
+) -> CardioReportRecord:
     """Adapt the current workbench result to the reference AI report contract."""
 
     metrics = tuple(
@@ -98,6 +102,39 @@ def build_cardio_report_record(data: DashboardData) -> CardioReportRecord:
             for item in data.distributions
         ],
     }
+    if regression is not None:
+        parameters["回归分析"] = {
+            "模型": "二元 Logistic 回归" if len(regression.predictors) == 2 else "多元 Logistic 回归",
+            "自变量": list(regression.predictors),
+            "样本数": regression.n,
+            "阳性数": regression.positive,
+            "阴性数": regression.negative,
+            "系数与优势比": [
+                {
+                    "变量": item.name,
+                    "系数": round(item.coefficient, 6),
+                    "OR": round(item.odds_ratio, 6),
+                    "95% CI": [round(item.ci_low, 6), round(item.ci_high, 6)],
+                    "p值": round(item.p_value, 8),
+                }
+                for item in regression.coefficients
+            ],
+            "拟合优度": {
+                "LR统计量": round(regression.fit.lr_statistic, 6),
+                "LR检验p值": round(regression.fit.lr_p_value, 8),
+                "AIC": round(regression.fit.aic, 6),
+                "BIC": round(regression.fit.bic, 6),
+                "McFadden pseudo-R²": round(regression.fit.mcfadden_r2, 6),
+                "HL检验p值": round(regression.fit.hosmer_lemeshow_p_value, 8),
+            },
+            "验证指标": {
+                "ROC-AUC": round(regression.validation.roc_auc, 6),
+                "PR-AUC": round(regression.validation.pr_auc, 6),
+                "Brier score": round(regression.validation.brier_score, 6),
+                "校准截距": round(regression.validation.calibration_intercept, 6),
+                "校准斜率": round(regression.validation.calibration_slope, 6),
+            },
+        }
     return CardioReportRecord(
         title="Cleveland 心脏风险分析报告",
         kind_label="心脏病风险描述性分析",
