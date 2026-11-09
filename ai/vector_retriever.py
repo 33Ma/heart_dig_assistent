@@ -44,7 +44,7 @@ class BGEChineseEncoder:
     def __init__(self, model_name: str = "BAAI/bge-small-zh-v1.5", *, allow_download: bool | None = None):
         self.model_name = model_name
         self.allow_download = (
-            os.getenv("ICELL_BGE_ALLOW_DOWNLOAD", "0") == "1"
+            os.getenv("CARDIO_BGE_ALLOW_DOWNLOAD", "0") == "1"
             if allow_download is None
             else allow_download
         )
@@ -85,13 +85,15 @@ def create_default_encoder():
     except ImportError:
         return ChineseHashEncoder()
     # 模型下载必须显式开启，否则首次点击报告按钮可能长时间阻塞。
-    allow_download = os.getenv("ICELL_BGE_ALLOW_DOWNLOAD", "0") == "1"
+    allow_download = os.getenv("CARDIO_BGE_ALLOW_DOWNLOAD", "0") == "1"
     return BGEChineseEncoder(allow_download=allow_download)
 
 
 class VectorIndex:
     def __init__(self, documents: Iterable[BM25Document] = (), *, encoder=None, dimensions: int = 384):
         self.encoder = encoder or create_default_encoder()
+        self.backend = "bge" if isinstance(self.encoder, BGEChineseEncoder) else "hash"
+        self.fallback_reason: str | None = None
         self.documents: list[BM25Document] = []
         self.vectors: list[list[float]] = []
         self.add_documents(documents)
@@ -100,9 +102,11 @@ class VectorIndex:
         pending = list(documents)
         try:
             vectors = [self.encoder.encode(f"{document.title} {document.text}") for document in pending]
-        except Exception:
+        except Exception as exc:
             # Model download/runtime failure should not disable local retrieval.
             self.encoder = ChineseHashEncoder()
+            self.backend = "hash_fallback"
+            self.fallback_reason = f"{type(exc).__name__}: {exc}"
             vectors = [self.encoder.encode(f"{document.title} {document.text}") for document in pending]
         self.documents.extend(pending)
         self.vectors.extend(vectors)

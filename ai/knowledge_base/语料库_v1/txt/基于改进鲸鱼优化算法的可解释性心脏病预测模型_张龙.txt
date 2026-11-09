@@ -1,0 +1,453 @@
+第29卷第3期
+软件工程 SOFTWAREENGINEERING
+2026年3月
+文章编号:2096-1472(2026)03-0073-06
+Vol.29 No.3
+Mar. 2026
+DOI:10.19644/j.cnki.issn2096-1472.2026.003.012
+基于改进鲸鱼优化算法的可解释性心脏病预测模型
+张 龙,王晓霞,李 翔,陈 晓
+(陕西科技大学电子信息与人工智能学院,陕西 西安 710021)
+zl1342145664@163.com; wangxiaoxia@sust.edu.cn; lixiangzj@sust.zdu.cn;
+chenxiao@sust.edu.cn
+摘 要:针对现有的心脏病风险预测模型普遍存在准确率低和可解释性差的问题,提出了一种基于改进鲸鱼优
+化算法和集成技术的心脏病预测模型。首先,以随机森林为基础分类器与逻辑回归模型进行集成;其次,改进鲸鱼
+优化算法,使用改进后的算法调整模型的最优超参数;最后,评估模型并使用沙普利加性解释方法进行可解释性分
+析。使用多个公开数据集进行实验,结果表明该模型达到了96.8%的准确率,精确率为96.2%,召回率为97.7%,F1
+分数值为96.9%,AUC值为0.989,其效果显著强于其他机器学习模型。
+关键词:机器学习;改进鲸鱼优化算法;集成技术;心脏病预测;可解释性
+中图分类号:TP391 文献标志码:A
+InterpretableHeartDiseasePredictionModelBasedonan
+ImprovedWhaleOptimizationAlgorithm
+ZHANG Long, WANG Xiaoxia, LI Xiang, CHEN Xiao
+(School of Electronic Information and Artificial Intelligence, Shaanxi University of Science & Technology, Xi’an 710021, China)
+zl1342145664@163.com; wangxiaoxia@sust.edu.cn; lixiangzj@sust.zdu.cn; chenxiao@sust.edu.cn
+Abstract:To address the common issues of low accuracy and poor interpretability in existing heart disease risk
+prediction models, this paper proposes a heart disease prediction model based on an improved Whale Optimization
+Algorithm and ensemble techniques. Firstly, an ensemble model is constructed using Random Forest as the base
+classifier and a Logistic Regression model. Subsequently, the standard Whale Optimization Algorithm is improved, and
+the enhanced algorithm is employed to fine-tune the model’s optimal hyperparameters. Finally, the model is evaluated,
+and interpretability analysis is conducted using the Shapley Additive Explanations method. Experiments were
+performed on multiple public datasets. The results demonstrate that the proposed model achieves an accuracy of 96.8%,
+a precision of 96.2%, a recall of 97.7%, an F1-score of 96.9%, and an AUC value of 0.989. Its performance is
+significantly superior to that of other machine learning models.
+Keywords:machine learning; improved whale optimization algorithm; ensemble technique; heart disease
+prediction; interpretability
+0 引言(Introduction)
+《中国心血管健康与疾病报告2022》显示,心脏病作为心
+血管疾病的重要类型之一,在我国居民的死亡原因中排在首
+位。心脏病包括冠状动脉心脏病、心律失常、充血性心力衰竭
+收稿日期:2025-04-09
+和心肌病等多种类型,其发病因素通常有压力大、高血压和糖
+尿病等,如图1所示。这导致医疗部门或医院收集到的相关数
+据量非常庞大,医生们很难及时做出准确的预测和诊断[1]。现
+阶段医生对心脏病的诊断多依赖患者的生活环境和生理指标
+
+74
+等因素,其结果往往会受医生个人经验的影响。因此,如何快
+速准确地对心脏病患者作出判断是目前心脏病领域最重要的
+难题[2]。
+图1 心脏病影响因素
+Fig.1Factorsinfluencingheartdisease
+针对上述背景,本文提出了一种基于改进鲸鱼优化算法与
+集成机器学习模型的心脏病预测模型,以随机森林(Random
+Forset,RF)为基础分类器,与逻辑回归(LogisticRegression,
+LR)模型进行集成来预测心脏病,并使用改进后的鲸鱼优化算
+法(WhaleOptimizationAlgorithm,WOA)优化集成模型的超
+参数,改进算法与集成模型的结合,有效提升了整体预测的准
+确率。本研究使用沙普利加性解释(SHapley Additive
+exPlanations,SHAP)算法分析了模型的关键特征,并通过与其
+他各种常见模型进行对比实验进一步验证了该模型的有效性。
+1 相关工作(Relatedwork)
+1.1 国内外研究
+人工智能的不断发展使得机器学习已经成为医学研究中
+最重要的一种方法,尤其在心脏病预测领域具有十分重要的意
+义和前景。越来越多的研究者投入其中,致力于推动该领域的
+进步,医学人员可以使用机器学习技术快速评估大量复杂的心
+脏病患者数据,用于预测心脏病风险[3]。
+EL-SHAFIEY等[4]提出了一种基于随机森林的混合遗传
+算法和粒子群优化方法有效提高了预测的准确率。该研究虽
+然提高了预测的准确率,但单一的机器学习模型难以全面反映
+数据的复杂性,在面对复杂数据时,容易出现过拟合现象。针
+对这些问题,MOHAN 等[5]引入了不同的特征组合和分类技
+术,使用线性的混合随机森林预测模型,提高了心脏病预测性
+能水平。SARKAR[6]采用集成了决策树、朴素贝叶斯和支持
+向量机等混合机器学习模型方法来预测心脏病,并与其他机器
+学习模型进行比较,结果展示了混合模型的优势。BIZIMANA
+等[7]的工作强调了SHAP值如何解释每个特征对复杂模型预
+测结果的贡献。此外,选择不同的超参数也会使模型预测的准
+确性发生变化,网格搜索作为常见的超参数优化方法具有计算
+复杂度较高的问题,而粒子群优化算法又存在早熟收敛和局部
+最优等问题[8]。综上所述,当前在心脏病风险预测领域,亟须
+一种能够处理高维数据,更好地捕捉数据中的复杂关系并具有
+2026年3月
+一定可解释性的模型,以此帮助医生对患者病情做出及时准确
+的诊断。
+1.2 随机森林与逻辑回归算法
+随机森林通过构建多个决策树来降低过拟合,提高预测的
+稳定性。在决策树的建立过程中,每个节点的特征是从当前树
+的特征中随机抽取新的特征子集,而不是放回,最终通过投票
+或平均的方式得出分类或回归结果[9],具体如式(1)所示:k
+其中:H(x)表示对样本x 的包外预测;H(x)=argmaxY ∑i=1I(hi(x)=Y)k 表示弱分类器的迭代
+(1)
+次数;h(x)表示基学习器;Y 表示某个样本特征的标签;I 表示
+示性函数。这种方式保证了输入每棵决策树的训练集的随机
+性以及每个划分节点的随机性。
+逻辑回归通常适用于二分类问题,将线性回归的输出转换
+为概率值,根据概率值进行分类[10]。Sigmoid函数的表达式如
+式(2)所示:
+σ(z)=1+e-z1
+(2)
+其中:z 是特征的线性组合。设置阈值(通常为0.5),如果输出
+概率大于阈值,则模型将输入数据分为正类,否则分为负类。
+1.3 多策略改进鲸鱼优化算法
+传统的鲸鱼优化算法(WOA)在搜索过程中依赖于随机性
+和螺旋更新机制,这可能导致算法过早收敛到局部最优解,尤
+其是在高维问题中收敛速度较慢[11]。因此,本文采用多种策
+略改进了鲸鱼优化算法。
+1.3.1 反向学习初始种群
+首先,采用反向学习方法初始化种群。通过反向学习,将
+初始种群中的N 个个体与N 个个体组合,形成一个2N 个个
+体的新种群。然后通过排序算法从新种群中选择多样性最大
+的N 个个体,形成一个新的初始种群,具体如式(3)所示:jjjj
+∧J x∧Jl =ai+b2i+rand* x(i 和bjji 分别表示x2i 的上j
+i-ai+bi)
+(3)
+其中:xl 表示反向学习后的新个体,aj
+界和下界,rand为0~1之间的随机数,xi∈[aji,jbi](jj=1,2,
+3,…,d)表示单个鲸鱼的坐标。如果rand为1,则鲸鱼的位置
+不变;如果rand为0,鲸鱼的位置就是上界和下界的中点。在
+每个初始种群个体反向学习后,产生一个新的个体,并且组合
+种群中的个体数量为2N。
+1.3.2 非线性收敛因子
+传统的鲸鱼优化算法在寻优过程中以恒定的速率下降,缺
+乏处理多目标之间权衡的机制,应用于多目标优化问题时效果
+有限。因此,为了解决算法迭代前期搜索和后期寻优失去平衡
+的问题,在迭代过程中使用了非线性收敛因子,如式(4)所示:
+α=2-2sinμ(max_iterπ+φt)
+(4)
+其中:max_iter为最大迭代次数;t为当前迭代次数;μ 和φ 是
+其表达式相关参数。
+1.3.3 自适应权重策略和随机差分变异策略
+传统的鲸鱼优化算法面临局部最优和过早收敛的问题。
+软件工程
+
+张 龙等:基于改进鲸鱼优化算法的可解释性心脏病预测模型
+第29卷第3期
+因此,为了能够跳出局部优化,并保持算法种群的多样性,提出
+了自适应权重策略和随机差分变异策略,如式(5)和式(6)
+所示:
+ω=1-emax_iter-1e-1,X(tt+1)=ω·Xp(t)-A·D (5)
+X(t+1)=ω·Xp(t)+D·ebl·cos(2πl) (6)
+随机差分变异策略的表达式如式(7)所示:
+X(t+1)=r1*(Xp(t)-X(t))+r2*(X'(t)-X(t))(7)
+其中:r1 和r2 均为[0,1]的随机数;X'(t)为种群的随机个体。
+个体使用自适应权重策略来调整位置,在算法前期使用较
+大的权重实现较强的全局搜索性能,保证搜索范围。随着迭代
+次数的增长,接近最优解时,权重值呈现指数减小。随后,个体
+通过随机差分变异策略进一步优化位置,选择变化前后的最佳
+位置[12]。
+1.4 心脏病预测模型
+集成模型的核心思想是利用不同模型的互补优势,将基础
+模型的输出作为新的特征输入,最终用另一个模型对这些特征
+进行学习和预测,这样能够有效突破单一模型的局限性[13]。
+本文模型是基于改进的鲸鱼算法(ImprovedWOA,IWOA)优
+化超参数,以随机森林为基础分类器,与逻辑回归模型进行集
+成的预测模型。该预测模型的框架共分为3个部分:在第一部
+分,获取心脏病数据集并进行预处理;在第二部分,采用IWOA
+寻找模型的最佳超参数,然后将处理后的数据输入集成模型进
+行训练;在第三部分,对模型预测结果进行评估,并使用SHAP
+算法对模型的预测结果进行解释。IWOA-RF-LR模型的框架
+如图2所示。
+图2 模型框架
+Fig.2Modelframework
+1.5SHAP模型解释
+SHAP是一种比较全面且功能强大的解释模型的方法,可
+以分析每个特征对于单个样本预测结果的贡献,解释复杂预测
+模型的单个预测。
+SHAP算法的原理是量化每个特征对模型预测结果的贡
+献,提供透明的局部和全局解释,其对应单个样本的特征分配
+的数值表现为SHAPvalue。假设第i个样本的第j 个特征为
+xij,模型的预测值为yi,模型认为每个样本目标变量的均值为
+基线,其基线表示为ybase,则其表达式如式(8)所示:
+75
+yi=ybase+f(xi1)+f(xi2)+…+f(xim) (8)
+其中:f(xij)表示第i个样本的第j个特征对样本预测值yi 的
+贡献度。当f(xij)>0,则表示这个特征对于模型预测有积极
+的影响;反之,则说明有负面的影响。SHAP最突出的优点是
+能够反映出样本中每个特征的影响力包括影响力的正负性,特
+征本身在模型内部具有交互作用[14]。
+2 实验方法与准备(Experimentalmethodsand
+preparation)
+2.1 数据集与预处理
+2.1.1 数据集
+实验使用的数据集是从UCI存储库中检索的开源心脏病
+数据,在这个数据集中,包括5个高清数据集共1190个记录示
+例,每条记录由11个独立的特征和一个依赖的目标类组成,是
+(瑞士+克利夫兰+Statlog+匈牙利+长滩VA)数据集的组
+合,具有达到的最大心率、血清胆固醇、胸痛类型、空腹血糖和
+静息血压等重要特征[15]。数据集的属性见表1。
+表1 带有特征信息的心脏病数据集的属性
+Tab.1 Attribute for a cardiac heart dataset with characteristic information
+序号 特征
+详细说明
+取值范围
+age 年龄(连续变量) [29,77]
+1
+sex 性别(分类变量) 1=男,0=女
+2
+3 chestpaintype胸痛类型(分类变量) 1:典型心绞痛,2:非典型心绞痛,3:非心绞痛,4:无症状
+restingbps Hg)静息血压(连续变量 140~160:高,120~140:异常,90~120:正常静息血压数值>160:很高,
+4
+cholesterol 血清胆固醇(连续变量mg/dL) 110~200:正常,200~240:边缘高,240 ~250:高,>250:非常高
+5
+6 fastingbloodsugar 空腹血糖(分类变量>120mg/dL) 1=真,0=假
+restingecg 静息心电图(分类变量) 0:正常,1:ST-T 波异常,2:可能或明确的左室肥厚
+7
+maxheartrate最大心率(连续变量) 60~100:正常,>100:心动过速
+8
+9 exerciseangina运动时的血液供应(分类变量) 1=是,0=否
+运动相对于休息引
+oldpeak 起的ST 段压低(连续变量) 1=是,0=否
+10
+STslope 峰值运动ST段的斜率(分类变量) 0:向上倾斜,1:平坦,2:向下倾斜
+11
+target 是否患有心脏病(分类变量) 0=否,1=是
+12
+2.1.2 数据预处理
+为了提高数据质量,为模型提供可靠的基础,需要对数据
+
+76
+集进行一系列的处理。首先,加载并分析数据集,在本研究中,
+异常值检测作为数据预处理的第一阶段。使用Z-score异常值
+检测来提高模型的效率,根据实验规则,集合中Z 分数>3的
+数据点被视为离群值。数据点偏离平均值的维度称为Z 分
+数,即标准分数,它显示了数据集中某个属性的值范围。其表
+达式如式(9)和式(10)所示:
+Zscore=x-μσ
+(9)
+xnormalized= x-xminxmax-xmin
+(10)
+此外,为了将原始数据中的分类特征转换为机器学习算法
+能够理解的数值格式,研究采用独热编码(One-Hot)用于对特
+征进行分类,主要是将属性转换为数字格式,变成机器学习算
+法可以理解的形式。1表示最大值。其余信息由0~1之间的
+小数组成,如式(9)和式(10)所示。在Z-score异常值处理后,
+数据集样本数从原来的1190减少到1162,其中存在28条异常
+值样本,处理前后的数据分布图如图3所示。从图中可以看出
+cholestero(血清胆固醇)和restingbps(静息血压)均存在异常
+值,虽然这两个变量的最低值都是0,但血清胆固醇在上方也
+有一个异常值,最大值为603。然后,将心脏病数据集按8∶2
+的比例划分为训练集和测试集。
+(a) 原始数据分布图
+(b) 处理后数据分布图
+图3 数据分布图
+Fig.3Datadistributionmap
+2.2 模型训练
+在对数据进行预处理后,分别使用逻辑回归、随机森林、决
+策树、K 近邻算法(K-NearestNetwork,KNN)、支持向量机
+(Support Vector Machine,SVM)、XGBoost、LightGBM 和
+IWOA-RF-LR8种机器学习算法对心脏病数据进行训练和预
+测。为了进一步验证模型的有效性,通过各种评价指标对这8
+种机器学习模型的预测效果进行评估和对比。
+2026年3月
+2.3 评估指标
+为了评估心脏病预测模型的性能,需要考虑捕捉模型性能
+不同方面的各种指标。本文通过准确度、精确率、召回率和F1
+值等指标来评估模型的效率。它们的表达式如式(11)~
+式(14)所示:
+A=TP+TN+FP+FNTP+TN
+(11)
+P=FP+TPTP
+(12)
+R=FN+TPTP
+(13)
+F1=2·R×PR+P
+(14)
+在式(12)~式(14)中,TP(TruePositive)是正确预测为正
+类样本的数量,FP(FalsePositive)是错误预测为正类样本的
+数量,TN(TrueNegative)是正确预测为负类样本的数量,FN
+(FalseNegative)是错误预测为负类样本的数量。
+在二分类问题的研究中,ROC曲线是一种简明且有效的
+评估工具。它画出一条单调递增的曲线,其中纵坐标表示正确
+分类的正例比例,横坐标表示错误分类的负例比例,曲线下方
+的面积被称为AUC。AUC值用于全面评估二分类模型的性
+能,尤其在阈值不确定或数据不平衡时,具有较高的参考价值,
+数值越大代表该预测模型效果更好。
+3 实验结果与分析(Experimentalresultsand
+analysis)
+3.1 模型结果与对比
+为验证本模型的有效性,与逻辑回归、随机森林、K近邻算
+法(KNN)、决策树、支持向量机(SVM)、XGBoost和LightGBM
+等常用机器学习模型进行比较分析。各种模型的训练预测结
+果使用准确率、精确率、召回率、F1值和AUC值这5项指标进
+行评估,其对比结果如表2所示,8种模型的ROC曲线对比如
+图4所示。从表2可以看出,本文所提经过IWOA优化后的集
+成模型(IWOA-RF-LR)各项评估均高于其他单一机器学习模
+型,其预测准确率为96.8%,精确率为96.2%,召回率为
+97.7%,F1值为96.9%,AUC值为0.989,进一步提升了模型的
+性能。IWOA-RF-LR模型的ROC曲线下方面积比逻辑回归
+模型、KNN、决策树、SVM、XGBoost和LightGBM 等模型的面
+积大,由ROC曲线的性质可知,曲线下方面积越大,准确率越
+高,体现出了本文模型的优越性。
+表2 不同模型对样本的预测结果
+Tab.2 Prediction results of different models on the sample
+模型 A/% P/% R/% F1值/% AUC
+逻辑回归 0.812 0.841 0.787 0.813 0.897
+随机森林 0.916 0.939 0.897 0.917 0.963
+决策树 0.879 0.922 0.839 0.878 0.885
+KNN 0.846 0.866 0.832 0.849 0.919
+SVM 0.899 0.903 0.903 0.903 0.949
+XGBoost 0.913 0.939 0.890 0.914 0.945
+LightGBM 0.916 0.939 0.897 0.917 0.954
+IWOA-RF-LR 0.968 0.962 0.977 0.969 0.989
+软件工程
+
+张 龙等:基于改进鲸鱼优化算法的可解释性心脏病预测模型
+第29卷第3期
+(a)逻辑回归
+(b)随机森林
+(c)决策树
+(d)KNN
+(e)SVM
+(f)XGBoost
+(g)LightGBM
+(h)IWOA-RF-LR
+图4 8种模型的ROC曲线图
+Fig.4ROCplotsforeightmodels
+本文模型的混淆矩阵如图5所示,它主要用于对比预测结
+果与实际值,并可以通过混淆矩阵来展示分类精度。从图中可
+以看出在预测结果中,测试集中非心脏病被预测为非心脏病有
+104例,心脏病被预测为心脏病有126例,非心脏病被预测为心
+脏病有5例,心脏病被预测为非心脏病有3例。显然,本文模型
+的真阳性和真阴性数量较高,而假阳性和假阴性的值较低,因
+此,该模型的分类性能较好,进一步验证了模型的可行性。
+图5 模型混淆矩阵
+Fig.5Modelconfusionmatrix
+77
+为了进一步验证改进的鲸鱼优化算法对模型性能的贡献,
+设计了消融实验,对比了IWOA、WOA、粒子群优化算法和传
+统网格搜索4种优化方法在集成模型上的表现,对比结果如表
+3所示。实验结果表明,IWOA在模型性能的指标上展现出显
+著优势,优于WOA、粒子群优化算法和网格搜索。
+表3 不同优化算法对比结果
+Tab.3 Comparison results different optimization algorithms
+WOA IWOA 网格搜索 粒子群优化 集成模型 准确率
+√
+0.945
+√
+√
+0.955
+√
+√
+0.962
+√
+√
+0.962
+√
+√
+0.968
+3.2 基于SHAP的模型可解释性分析
+在机器学习用于医学诊断的实践中,模型的解释性也是需
+要被考虑的一个重要因素。所以,在对模型评估后还采用了
+SHAP方法对IWOA-RF-LR模型进行解释,该模型的特征重
+要性排序图如图6所示。图6中显示特征重要性排序前6的
+特征分别是STslope(峰值运动ST段的斜率)、chestpaintype
+(胸痛类型)、oldpeak(运动相对于休息引起的ST 段压低)、
+cholesterol(血清胆固醇)、sex(性别)、exerciseangina(运动时的
+血液供应),可见这6个因素是影响是否患有心脏病的最关键
+因素。
+图6 基于SHAPvalue的特征重要性排序
+Fig.6RankingoffeatureimportancebasedonSHAPvalue
+SHAP特征分析的结果如图7所示,对影响心脏病患病的
+关键因素按重要性进行了排序。图中每个点代表一个样本,从
+左到右的渐变反映了特征值从小到大的变化。纵轴上的特征
+标签不仅指示了特征的重要性排序,还揭示了每个特征值与
+SHAP 值之间的关系及其分布情况。从图中可以看出,ST
+slope(峰值运动ST段的斜率)是最重要的心脏病风险因素,与
+图6展示的结果一致,这进一步验证了分析的可靠性。SHAP
+特征分析有助于医生和研究人员更好地理解哪些因素在心脏
+病的早期诊断和治疗中最为关键,从而制定更有效的预防和治
+疗策略。
+
+78
+图7 SHAP特征分析结果
+Fig.7ResultsofSHAPfeatureanalysis
+4 结论(Conclusion)
+为了辅助医生快速准确地对心脏病患者作出判断,本研究
+提出了一种基于改进鲸鱼优化算法的集成模型(IWOA-RF-
+LR)用于心脏病预测。首先针对从UCI存储库中检索的开源
+心脏病数据集进行异常值处理、标准化等预处理,并构建以随
+机森林为基础分类器,与逻辑回归模型进行集成的预测模型,
+再通过多策略改进的鲸鱼优化算法获得集成模型超参数的全
+局最优解,使用处理后的数据集训练模型。此外,为了验证模
+型的可行性和增加可信度,采用准确率、精确率、召回率和F1
+值等指标对模型进行评估,并与多个不同的机器学习模型和优
+化算法进行了对比实验,最后使用SHAP方法对模型进行可
+解释性分析。最终结果表明,本文预测模型具有更高的准确性
+和更好的可解释性,可以帮助早期发现心脏病患者并及时进行
+治疗,具有重要的临床应用价值。在未来的研究工作中,将考
+虑进行多模态心脏病数据的风险预测,如加入心电图和心音等
+多种类型数据,以及继续深化对模型可解释性的研究,为医疗
+决策提供更可靠的技术支持。
+参考文献(References)
+[1]胡盛寿,王增武.《中国心血管健康与疾病报告2022》概述
+[J].中国心血管病研究,2023,21(7):577-600.
+[2]KATARYAR,MEENASK.Machinelearningtechniques
+forheartdiseaseprediction:acomparativestudyandanaly-
+sis[J].Healthandtechnology,2021,11(1):87-97.
+[3]齐俊锋,韩胜红,李俊琳,等.心血管病危险因素的风险特征
+分析及疾病预测模型研究[J].现代预防医学,2022,49
+(18):3283-3287.
+[4]EL-SHAFIEY M G,HAGAG A,EL-DAHSHANE-SA,
+etal.AhybridGAandPSOoptimizedapproachforheart-
+diseasepredictionbasedonrandomforest[J].Multimedia
+toolsandapplications,2022,81(13):18155-18179.
+[5]MOHANS,THIRUMALAIC,SRIVASTAVA G.Effective
+2026年3月
+heartdiseasepredictionusinghybridmachinelearningtech-
+niques[J].IEEEaccess,2019,7:81542-81554.
+[6]SARKARBK.Hybridmodelforpredictionofheartdisease
+[J].Softcomputing,2020,24(3):1903-1925.
+[7]BIZIMANAPC,ZHANGZ,HOUNYEA H,etal.Auto-
+matedheartdiseasepredictionusingimprovedexplainable
+learning-basedtechnique[J].Neuralcomputingandapplica-
+tions,2024,36(26):16289-16318.
+[8]ZAMAN HRR,GHAREHCHOPOGHFS.Animproved
+particleswarmoptimizationwithbacktrackingsearchopti-
+mization algorithm forsolving continuous optimization
+problems[J].Engineering withcomputers,2022,38(4):
+2797-2831.
+[9]WANGJ,RAOC,GOH M,etal.Riskassessmentofcoro-
+nary heart disease based on cloud-random forest[J].
+Artificialintelligenceeview,2023,56(1):203-232.
+[10]ELKAHWAGYD M AS,KIRIACOSCJ,MANSOUR
+M.Logisticregressionandotherstatisticaltoolsindiag-
+nosticbiomarkerstudies[J].Clinicalandtranslational
+oncology,2024,26(9):2172-2180.
+[11]王洁,李金泽,王子曈,等.改进鲸鱼优化LightGBM 的可
+解释性心脏病风险预测模型[J].北京邮电大学学报,
+2023,46(6):39-45.
+[12]ZHANGJ,WANGJS.Improvedwhaleoptimizationalgo-
+rithmbasedonnonlinearadaptiveweightandgoldensine
+operator[J].IEEEaccess,2020,8:77013-77048.
+[13]NARASIMHANG,VICTORA.Greywolfoptimizedstacked
+ensemblemachinelearningbasedmodelforenhancedeffi-
+ciencyandreliabilityofpredictingearlyheartdisease[J].
+Automatika,2024,65(3):749-762.
+[14]曹睿,廖彬,李敏,等.基于XGBoost的在线短租市场价格
+预测及特征分析模型[J].数据分析与知识发现,2021,
+5(6):51-65.
+[15]AL-RESHAN M S,AMINS,ZEB M A,etal.Arobust
+heartdiseasepredictionsystemusinghybriddeepneural
+networks[J].IEEEaccess,2023,11:121574-121591.
+作者简介:
+张 龙(2000),男(汉族),西安,硕士生。研究领域:目标检
+测、机器学习预测性分析。
+王晓霞(1977),女(汉族),西安,副教授,硕士。研究领域:计
+算机视觉及机器学习。本文通信作者。
+李 翔(1976),女(汉族),西安,讲师,博士。研究领域:人工
+智能相关技术。
+陈 晓(1986),女(汉族),宝鸡,讲师,硕士。研究领域:信号
+与信息处理,目标跟踪理论。
+软件工程

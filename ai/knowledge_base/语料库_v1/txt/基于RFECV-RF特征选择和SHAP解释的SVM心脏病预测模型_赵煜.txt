@@ -1,0 +1,1121 @@
+重庆工商大学学报(自然科学版)
+Journal of Chongqing Technology and Business University(Natural Science Edition)
+ISSN 1672-058X,CN 50-1155/N
+《重庆工商大学学报(自然科学版)》网络首发论文
+题目：
+基于RFECV-RF 特征选择和SHAP 解释的SVM 心脏病预测模型
+作者：
+赵煜，吴新娜
+收稿日期：
+2026-07-09
+网络首发日期： 2026-11-03
+引用格式：
+赵煜，吴新娜。基于RFECV-RF 特征选择和SHAP 解释的SVM 心脏病预测模
+型[J/OL]．重庆工商大学学报(自然科学版).
+https://link.cnki.net/urlid/50.1155.n.20261103.1312.011
+网络首发：在编辑部工作流程中，稿件从录用到出版要经历录用定稿、排版定稿、整期汇编定稿等阶
+段。录用定稿指内容已经确定，且通过同行评议、主编终审同意刊用的稿件。排版定稿指录用定稿按照期
+刊特定版式（包括网络呈现版式）排版后的稿件，可暂不确定出版年、卷、期和页码。整期汇编定稿指出
+版年、卷、期、页码均已确定的印刷或数字出版的整期汇编稿件。录用定稿网络首发稿件内容必须符合《出
+版管理条例》和《期刊出版管理规定》的有关规定；学术研究成果具有创新性、科学性和先进性，符合编
+辑部对刊文的录用要求，不存在学术不端行为及其他侵权行为；稿件内容应基本符合国家有关书刊编辑、
+出版的技术标准，正确使用和统一规范语言文字、符号、数字、外文字母、法定计量单位及地图标注等。
+为确保录用定稿网络首发的严肃性，录用定稿一经发布，不得修改论文题目、作者、机构名称和学术内容，
+只可基于编辑规范进行少量文字的修改。
+出版确认：纸质期刊编辑部通过与《中国学术期刊（光盘版）》电子杂志社有限公司签约，在《中国
+学术期刊（网络版）》出版传播平台上创办与纸质期刊内容一致的网络版，以单篇或整期出版形式，在印刷
+出版之前刊发论文的录用定稿、排版定稿、整期汇编定稿。因为《中国学术期刊（网络版）》是国家新闻出
+版广电总局批准的网络连续型出版物（ISSN 2096-4188,CN 11-6037/Z），所以签约期刊的网络版上网络首
+发论文视为正式出版。
+
+网络首发时间：2026-11-03 17:02:57 网络首发地址：https://link.cnki.net/urlid/50.1155.n.20261103.1312.011
+基于RFECV-RF 特征选择和SHAP 解释的SVM 心脏病预测模型
+赵煜，吴新娜
+兰州财经大学 统计与数据科学学院，兰州 730020
+摘要：【目的】针对心脏病预测中特征选择稳定性不足及支持向量机（SVM）决策缺乏透明解释的问
+题，构建基于RFECV-RF 特征选择的SVM 评估模型，并引入SHAP 进行可解释性分析。【方法】以
+UCI 克利夫兰心脏病数据集为研究对象，经5 次随机划分进行训练与评估，与逻辑回归、随机森林、决
+策树对比，并在消融实验中验证特征选择与交叉验证的作用，采用SHAP 从事后解释角度量化各特征
+对预测结果的贡献。【结果】RFECV-RF 在5 随机次划分中一致筛选出8 个关键变量；SVM 的平均准
+确率为0.8633,AUC 值为0.9228，优于对比模型；消融实验显示，移除特征选择后准确率下降1.17%，
+将RFECV 替换为RFE 后下降6.58%；SHAP 分析识别出主要血管数、地中海贫血和胸痛类型等关键预
+测因子。【结论】RFECV-RF 特征选择与SVM 分类相结合可有效提升心脏病预测精度，SHAP 解释框
+架增强了模型决策的透明性，为小样本临床风险评估提供了可借鉴的方法参考。
+关键词：支持向量机；心脏病预测；特征选择；模型对比；可解释性
+中图分类号：TP181;TP391;R319 文献标识码：A
+An SVM Heart Disease Prediction Model Based on RFECV-RF Feature Selection and SHAP
+Interpretation
+ZHAO Yu,WU Xinna
+School of Statistics and Data Science, Lanzhou University of Finance and Economics, Lanzhou 730020, China
+Abstract:【Objective】To address the limited stability of feature selection and the lack of transparent
+interpretation of support vector machine (SVM) decisions in heart disease prediction, an SVM evaluation model
+based on RFECV-RF feature selection was constructed, and SHAP was introduced for interpretability analysis.
+【Methods】Using the UCI Cleveland heart disease dataset as the research object, the model was trained and
+evaluated with five random partitions and compared with logistic regression, random forest, and decision tree;
+the roles of feature selection and cross-validation were verified in ablation experiments; and SHAP was used to
+quantify the contribution of each feature to the prediction results from a post hoc interpretation perspective.
+【Results】RFECV-RF consistently identified eight key variables across the five random partitions; the SVM
+achieved a mean accuracy of 0.8633 and an AUC of 0.9228, outperforming the comparison models; ablation
+experiments showed that the accuracy decreased by 1.17% after removing feature selection and by 6.58% after
+replacing RFECV with RFE; SHAP analysis identified the number of major vessels, thalassemia, and chest pain
+type as key predictors.【Conclusion】The combination of RFECV-RF feature selection and SVM classification
+can effectively improve the accuracy of heart disease prediction, and the SHAP interpretability framework
+enhances the transparency of model decision-making, providing a methodological reference for small-sample
+clinical risk assessment.
+Key words:support vector machine; heart disease prediction; feature selection; model comparison;
+interpretability
+根据《中国心血管健康与疾病报告2025 概
+要》[1]，心血管疾病仍然是中国城乡居民的首要
+死亡原因，2021 年占农村地区死亡人数的
+48.98%，占城市地区死亡人数的47.35%，缺血性
+心脏病带来的疾病负担日趋加重，因此有必要在
+人群层面推进进早期风险识别工作。
+在预测方法方面，传统统计模型如逻辑回归
+曾广泛采用，但在处理复杂的非线性关系时存在
+不足[2-3]。相比之下，机器学习方法由于泛化能力
+较好而被引入，多项研究表明，机器学习方法在
+预测心力衰竭、心房颤动、肺动脉高压等特定亚
+型疾病方面具有较好效果[4-6]
+心脏病受多种因素共同影响，输入特征过多
+会引入信息冗余，进而影响模型的准确性与泛化
+能力。当前常用的特征选择方法有无监督学习、
+收稿日期：2026-07-09；修回日期：2026-10-17。
+基金项目：国家社会科学基金西部项目（21XTJ004）资助。
+集成学习特征重要性筛选及正则化方法等[7-9]；随
+机森林模型可利用基尼重要性评估特征重要性，
+并能处理非线性关系，因而在特征选择中应用较
+多，相关研究在齿轮故障诊断、慢性肾脏病预测
+等场景中证实，结合交叉验证的RFECV-RF 策略
+可以选出最优的特征集合，并能避免过拟合，其
+稳定性优于单一特征选择方法[10-11]；因果特征选
+择方法也用于疾病复发风险的预测，在筛选变量
+方面准确性较高[12]；罗悦与周娟[13]在中医体质分
+类研究中，通过随机森林进行特征选择，获得了
+良好的预测效果。
+在预测模型层面，支持向量机凭借结构风险
+最小化原则，在小样本非线性分类中具有理论优
+势，多项研究已证实其在心脏病及相关疾病预测
+中的有效性[14-15]。然而，SVM 的预测性能高度依
+作者简介：赵煜(1972—)，女，博士，教授，从事应用数理统计与生态经济统计研究.Email:zhaoyu@lzufe.edu.cn
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+赖于惩罚参数与核参数的选择。针对该问题，智
+能优化算法被引入参数寻优过程，王洁等[16]研究
+表明，经改进的灰狼算法、鲸鱼算法等优化的
+SVM 在预测精度上优于未经优化或传统网格搜索
+调参的版本；傅杰等[17]研究融合随机森林特征选
+择与改进灰狼算法优化SVM，在克利夫兰数据集
+上进行了验证。在方法拓展层面，Stacking 集成
+策略通过融合多种基学习器已被应用于心血管病
+及乳腺癌等疾病的预测，展现了优于单一模型的
+性能[18-19]。
+此外，机器学习方法的应用已从心脏病预测
+拓展至更广泛的临床场景，包括帕金森病认知障
+碍、肺癌、食道闭锁术后并发症等疾病的预测建
+模[20-22]。在技术层面，联邦学习框架下的逻辑回
+归模型通过数据扰动策略兼顾了隐私保护与预测
+精度[23]，而无监督图表示学习方法为脑疾病预测
+提供了新的特征提取路径[24]。
+机器学习模型的“黑盒”特性制约了其在临
+床场景中的接受度。SHAP 方法基于合作博弈论，
+能够为各输入特征分配贡献度并量化其影响方向，
+已成为模型可解释性分析的主流工具。现有研究
+已将SHAP 应用于心脏病、肥胖症等疾病的风险
+预测，实现了从全局特征重要性排序到单特征影
+响方向分析的解释框架[25-27]。在不平衡数据场景
+下，也有研究将SHAP 与混合采样策略结合，构
+建了兼具预测精度与可解释性的分析框架[28]。此
+外，部分研究尝试在模型优化阶段即嵌入可解释
+性考量，通过特征筛选与SHAP 分析的结合，为
+临床决策提供可追溯的依据[29]。
+基于上述文献启发，本文主要解决现有心脏
+病预测模型中特征选择稳定性不足及SVM 模型
+决策缺乏透明解释的问题，运用RFECV-RF 方法
+进行特征筛选与交叉验证，以SVM 作为核心分
+类器，并引入SHAP 框架对预测结果进行事后解
+释。研究内容以UCI 克利夫兰心脏病数据集为对
+象，构建基于RFECV-RF 方法的SVM 模型，通
+过多次随机划分与消融实验检验其有效性。本文
+主要工作体现在两个方面：第一，将RFECV-RF
+与SVM 整合为面向小样本医学分类的完整流程，
+通过多次随机划分与消融实验分别验证特征选择
+步骤及交叉验证机制的具体作用；第二，将
+SHAP 解释从全局重要性延伸到单特征影响方向，
+为临床决策提供透明化的风险归因依据。
+1 研究方法
+1.1 RFECV-RF 特征选择
+递归特征消除与交叉验证（Recursive Feature
+Elimination and Cross-Validation, RFECV）是一种
+基于机器学习的特征选择方法，它依托于基模型
+的内部特征权重进行筛选，其核心逻辑在于将递
+归特征消除（RFE）与交叉验证（CV）有机结合。
+RFE 负责迭代剔除权重最低的特征，而CV 则用
+于量化每一步迭代后的模型表现。通过这种方式，
+算法能在避免过拟合的前提下，自适应地锁定最
+优特征子集，从而在提升模型精度的同时增强其
+泛化能力。
+随机森林（Random Forest, RF）因其内置的
+基尼不纯度能够天然输出特征重要性得分，其重
+要性度量基于该特征在所有树中带来的平均不纯
+度减少，且对非线性关系、特征共线性及异常值
+均具有较强鲁棒性[30]，故本文选择随机森林作为
+RFECV 的基评估器，通过在训练集上执行五次五
+折交叉验证，根据平均分类准确率来确定最佳的
+特征数量，从而为后续的模型训练提供维度更低、
+结构更简洁的特征集。
+1.2 预测模型
+为系统评估特征选择的有效性并筛选出最优
+预测方案，本文构建了四种分类模型进行对比分
+析。支持向量机（Support Vector Machine, SVM）
+是本文的核心预测模型，其通过径向基核函数
+（RBF）将原始特征映射至高维空间，并在该空
+间中寻找最佳分离超平面以最大化分类间隔，有
+效捕获临床特征之间复杂的非线性关系。随机森
+林作为集成学习算法，采用自助采样与随机特征
+子集策略构建多棵决策树，借助投票机制整合各
+树输出，可有效抑制过拟合。决策树（Decision
+Tree, DT）基于CART 算法递归划分特征空间，
+以基尼不纯度最小化为分裂准则生成树形分类规
+则，其决策路径清晰，便于临床解读。逻辑回归
+（Logistic Regression, LR）为广义线性基准模型，
+对特征进行线性加权后经Sigmoid 变换输出患病
+概率，参数具备统计可解释性，适于衡量非线性
+模型的性能增益。四种模型分别代表线性和非线
+性、单一和集成等不同学习范式，在相同的数据
+划分下拟合与预测，并依据统一评价指标进行系
+统比较。
+1.3 SHAP 算法
+复杂机器学习模型因其内部决策机制不透明
+而常被视作黑盒，这一特性制约了模型的可信度、
+透明度及其在临床实践中的接受度。SHAP
+（SHapley Additive exPlanations）基于合作博弈
+论中的Shapley 值，为各输入特征分配贡献度，
+从而解释模型预测结果。该方法将模型输出近似
+为各特征贡献的线性叠加，对于已训练的模型f，
+SHAP 通过计算每个特征的Shapley 值i来度量
+该特征在特定预测中的边际贡献，其计算公式如下：
+i
+SN\{ }i S! NN!S 1! f S { }i  f S 
+
+，1(）
+ 
+其中，N 表示全部特征的集合，S 为不包含特征i
+的任意特征子集，S 为该子集的基数，S表
+示仅使用子集S 中特征时的模型输出，
+f S{ }i 表示在特征子集S 的基础上加入特征
+
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+i 后模型的预测值。Shapley 值通过对所有可能子
+集进行遍历，取加入前后输出差值的加权平均获
+得。
+基于SHAP 概要图和依赖图，可进一步考察
+各特征的影响方向、取值变化与贡献之间的非线
+性关系以及变量间的交互效应。本文将SHAP 解
+释框架与RFECV‑RF 特征选择及SVM 预测模型
+相结合，旨在突破黑盒模型的局限，为临床决策
+提供透明且可量化的风险归因依据，从而提升模
+型在真实医疗场景中的可信度与可接受性。
+1.4 模型评价指标
+本文采用二分类问题中通用的混淆矩阵作为
+评估基础，设真正例（TP）、假负例（FN）、假
+正例（FP）、真负例（TN）分别表示实际与预测
+类别的四种组合情况。选取评价指标包括准确率
+（A）、精确率（P）、召回率（R）及F1 分数。
+计算公式如下：
+TP TN
+A
+， (2)
+TP TN  FP  FN
+表1 数据集中各特征描述
+Table1 Description of features in the dataset
+特征
+含义
+类型
+age
+年龄
+P  TP ， (3)
+TP  FP
+R  TP ， (4)
+TP  FN
+F1  2PPRR 。 (5)
+2 数据来源及预处理
+2.1 数据来源
+数据来源于UCI 数据库
+（https://archive.ics.uci.edu/）中的Heart Disease
+数据库，本文选取该数据库中的克利夫兰数据集
+进行分析，包括13 个特征，1 个目标变量，共有
+303 个样本，13 个特征分别为年龄、性别、达到
+的最大心率、胸痛类型、血清胆固醇、静息血压、
+空腹血糖、运动诱发的心绞痛、静息心电图、运
+动相对于休息引起的ST 段压低、主要血管数、
+地中海贫血、峰值运动ST 段的斜率；目标变量
+为是否患有心脏病。变量说明如表1 所示。
+取值范围
+29~77 岁
+数值型
+sex
+性别
+1 表示男性，0 表示女性
+分类型
+thalach
+达到的最大心率
+71~202 b/min
+数值型
+cp
+胸痛类型
+1 表示典型心绞痛，2 表示非典型心绞痛，3 表
+分类型
+chol
+血清胆固醇
+示非心绞痛，4 表示无症状
+126~564 mg/dL
+数值型
+trestbps
+静息血压
+94~200 mmHg
+数值型
+exang
+运动诱发的心绞痛
+1 表示是，0 表示否
+分类型
+fbs
+空腹血糖
+1 表示>120 mg/dL,0 表示≤120 mg/dL
+分类型
+restecg
+静息心电图
+0 表示正常，1 表示有ST-T 波异常，2 表示明确
+分类型
+oldpeak
+运动相对于休息引起的ST 段压低
+的左心室肥厚
+0~6.2 mV
+数值型
+Slope
+峰值运动ST 段的斜率
+1 表示上升；2 表示平坦；3 表示下降
+分类型
+thal
+地中海贫血
+3 表示正常；6 表示固定缺陷；7 表示可逆缺陷
+分类型
+ca
+主要血管数
+0~3 条
+数值型
+target
+是否患有心脏病
+0 表示否，1 表示是
+分类型
+2.2 数据预处理
+2.2.1 缺失值处理
+本文收集的数据中，原始数据的303 个样本
+中主要血管数中有4 个缺失值，地中海贫血中有
+2 个缺失值。常用缺失值处理方法包括删除法及
+填补法，由于缺失值不多，采用删除法直接删除
+具有缺失值的样本进行处理，删除法在本文中较
+为适用，因为缺失样本仅占总样本的约2%，不
+会对整体数据分布产生显著影响，同时避免了插
+补方法可能引入的偏差。删除具有缺失值的6 个
+样本后剩下297 个样本进行后续分析。
+2.2.2 数据划分
+以年龄、性别、最大心率、胸痛类型、血清
+胆固醇、静息血压、空腹血糖和运动诱发的心绞
+痛等13 个变量为自变量；以是否患有心脏病作
+为目标变量，即因变量。为降低单次划分带来的
+随机性影响，本文采用5 次随机划分策略，每次
+将数据集按8:2 比例划分为训练集和测试集，训
+练集包含237 个样本，测试集包含60 个样本，
+随机种子分别设为42、0、1、2、3。所有模型的
+训练与评估均在相同划分下进行，最终报告各指
+标在5 次划分上的均值与标准差。特征选择过程
+仅在每次划分的训练集内部执行，确保测试集信
+息不参与特征筛选，避免数据泄露，多次划分策
+略能够有效降低单次划分中数据分布不均对模型
+评估结果的影响，使性能评价更加稳健和可靠。
+2.2.3 特征相关性
+相关性分析有助于揭示变量间的潜在关联，
+面对复杂数据集时，相关性分析有助于揭示变量
+间的内在结构，可直观显示变量间相关程度的强
+弱。对进行数据预处理后的各个特征做相关性分
+析，判断各特征与目标变量之间的相关性。运用
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+皮尔逊相关系数，得到各个特征的相关性热力图
+如图1 所示，可知thal、ca、exang 和oldpeak 这
+4 个特征与target 之间正向相关且系数大，表明
+其与是否患病的关系较为密切。
+图1 特征相关性热力图
+Fig.1 Heatmap of feature correlations
+3 心脏病预测模型研究与结果分析
+3.1 RFECV-RF 方法的准确率
+以第1 次随机划分为例，该次划分的随机种
+子为42，在训练集上执行RFECV-RF 进行5 折
+交叉验证，得到分类平均准确率随所选特征个数
+的变化如图2 所示。由图2 可知，分类平均准确
+率在选择特征数为8(五折交叉验证准确率的平
+均值）时最高，平均准确率达到0.8099，各特征
+数量对应的平均准确率如表2 所示。
+图2 分类平均准确率随所选特征个数的变化
+Fig.2 Variation of average classification accuracy with the
+number of selected features
+经RFECV-RF 筛选后各特征的排序如表3 所
+示，排序为1 的8 个变量被用于后续分析，分别
+为年龄、胸痛类型、主要血管数、地中海贫血、
+静息血压、运动相对于休息引起的ST 段压低、
+血清胆固醇、最大心率。在其余4 次划分中，所
+选特征子集均包含上述8 个特征，表明特征选择
+结果具有较强的稳定性。
+表2 所选特征个数对应的平均准确率
+Table2 Average accuracy for each number of selected features
+所选特征的个数
+平均准确率
+1
+0.5818
+2
+0.6196
+3
+0.6492
+4
+0.6872
+5
+0.7255
+6
+0.7676
+7
+0.7762
+8
+0.8099
+9
+0.7929
+10
+0.7887
+11
+0.8014
+12
+0.7888
+13
+0.7932
+表3 RFECV 方法的各个特征排序结果
+Table3 Feature importance ranking obtained by RFECV
+特征名称
+排序结果
+1
+年龄
+1
+胸痛类型
+1
+主要血管数
+1
+地中海贫血
+1
+静息血压
+1
+运动相对于休息引起的ST 段压低
+1
+血清胆固醇
+1
+最大心率
+2
+运动诱发的心绞痛
+3
+性别
+4
+峰值运动ST 段的斜率
+5
+静息心电图
+6
+空腹血糖
+3.2 模型训练
+采用5 次划分中第1 次划分的训练集和测试
+集进行模型拟合与可视化展示，该次划分的训练
+集包含237 个样本，测试集包含60 个样本，各
+模型的性能评估则基于全部5 次划分的结果。
+3.2.1 模型拟合可视化结果
+为展示模型在训练集上的拟合特性，以第1
+次划分为例，将8 个筛选特征作为自变量，分别
+拟合SVM、随机森林、决策树和逻辑回归模型，
+并通过PCA 降维至二维平面绘制决策边界。
+同时，为了直观观察各个变量对心脏病的显
+著影响，基于第1 次划分的训练集，对逻辑回归
+模型进行参数估计与显著性检验，结果如表4 所
+示。
+表4 RFECV-RF 的逻辑回归参数估计及显著
+性检验结果
+Table4 Parameter estimates and significance test results of
+the logistic regression model based on RFECV-RF
+变量
+参数估计值
+p 值
+const
+-3.3898
+0.1899
+age
+-0.0264
+0.2738
+cp
+0.4947
+0.0100
+ca
+1.1592
+0.0000
+thal
+0.4085
+0.0000
+oldpeak
+0.5232
+0.0082
+trestbps
+0.0229
+0.0329
+thalach
+-0.0263
+0.0092
+chol
+0.0038
+0.2727
+由表4 可知，常数项、age、thalach 前的系
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+数为负，与文献[18]中的相符。其余参数的系数
+为正。其中cp、ca、thal、oldpeak、trestbps 和
+thalach 的p 值小于0.05，表明这6 个因素在0.05
+水平上对心脏病患病风险有显著影响。
+3.2.2 模型拟合效果对比
+为直观呈现各模型在训练集上的拟合差异，
+本文将SVM 与决策树、随机森林和逻辑回归的
+决策边界进行了可视化对比。将训练数据进行标
+准化，引入主成分分析（PCA）将高维数据映射
+至二维平面，以解决多维数据难以可视化的问题。
+PCA 通过正交变换提取互不相关的主成分，其中
+第一主成分（PCA1）承载了最大的数据方差，第
+二主成分（PCA2）则在满足与PCA1 正交约束的
+前提下保留次大方差。经计算，前两个主成分的
+方差解释比例分别为30.14%和15.20%，累计解
+释方差为45.34%，虽然累计解释率未达较高水平，
+但作为可视化降维手段，前两主成分已能够保留
+原始特征空间中的主要变异方向，已满足决策边
+界的图形展示与模型间对比分析。基于降维后的
+数据构建二维网格，并输入各模型生成预测分类
+面。如图3 所示，背景的粉、蓝双色区域分别代
+表不同模型的分类决策域，而红色与紫色的数据
+点则严格对应心脏病患者与非患者的真实分布，
+通过比对决策边界与样本分布的吻合程度，可对
+各模型的拟合特性加以评判。
+(a)逻辑回归
+(b)随机森林
+(c)决策树
+(d)SVM
+图3 四个模型在训练集下的拟合效果
+Fig.3 Fitting performance of the four models on the training
+set
+由图3 可知，逻辑回归的决策边界是线性的，
+而随机森林、决策树和SVM 的决策边界是非线
+性的。SVM 的决策边界呈现出光滑曲线形状，在
+保持最小间隔原则下实现最优化分割，可见其边
+界紧贴两类簇的过渡区域，有效隔离多数样本点，
+表现较强泛化能力。不同模型的决策边界形状和
+位置各不相同，说明它们对数据的分类方式存在
+差异。综上所述，SVM 能有效隔离多数样本点，
+进行最优的分割，拟合效果上表现最好。
+3.3 心脏病预测与模型评估
+3.3.1 SVM 模型预测结果
+根据训练集拟合效果对比，SVM 模型在四个
+模型中表现最优，故利用SVM 模型对测试集进
+行预测，并与测试集真值比较，同时输出预测概
+率，以第1 次划分为例，SVM 模型对测试集60
+个样本进行预测，限于篇幅，预测结果前10 个
+样本如表5 所示。在因变量表现为二分类（即只
+有两种结果）的预测中，通常概率值大于或等于
+0.5，则输出1，表示患有心脏病，概率值小于
+0.5 则输出0，表示不患有心脏病。
+表5 基于RFECV-RF 的SVM 模型预测结果
+Table5 Prediction results of the SVM model based on
+RFECV-RF
+序号
+真实值 预测值 预测概率
+1
+0
+0
+0.1506
+2
+1
+0
+0.3662
+3
+0
+0
+0.1119
+4
+1
+1
+0.7972
+5
+0
+0
+0.1052
+6
+0
+0
+0.4783
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+7
+0
+0
+0.4152
+8
+0
+1
+0.7188
+9
+1
+1
+0.8853
+10
+0
+0
+0.0804
+3.3.2 模型评估
+为比较各模型的预测性能，在每次划分中计
+算准确率、精确率、召回率、F1 分数及AUC 值，
+然后取5 次划分的均值与标准差，结果汇总于表
+6。由表6 可知，SVM 模型除召回率略小于逻辑
+回归外，其余指标均取得最优均值，其中准确率
+为0.8633，精确率为0.8920，召回率为0.8083，
+F1 分数为0.8466,AUC 为0.9228。逻辑回归次之，
+决策树最差。
+表6 模型评价指标值
+Table 6 Model evaluation metrics
+模型
+评价
+随机森
+逻辑回
+指标 SVM
+决策树
+林
+归
+准确 0.8633 0.8300 0.7467
+0.8500
+率 (0.0340) (0.0245) (0.0340)
+(0.0211)
+精确率 0.8920 (0.0535) 0.8337 (0.0224) 0.7363(0.0521) (0.0331)
+0.8577
+召回率 0.8083 (0.0446) 0.7937 (0.0528) 0.7246(0.0796) (0.0562)
+0.8144
+F1 分 0.8466 0.8121 0.7258
+0.8337
+数 (0.0353) (0.0303) (0.0371)
+(0.0273)
+AUC 0.9228 0.9071 0.7714
+0.9160
+值 (0.0271) (0.0244) (0.0381)
+(0.0233)
+注：表中括号内的数值为重复5 次随机划分得到的各指标
+标准差。
+为直观比较各模型在测试集上的预测准确性，
+以第1 次划分为例，给出四个模型的混淆矩阵如
+表7 所示，ROC 曲线如图4 所示。由表7 可知，
+对测试集为60 个样本进行预测，SVM 在四个模
+型中预测准确率最高，其次是逻辑回归模型。其
+中SVM 模型的TP 为20，即真实值为1 预测结果
+也为1 的个数有20 个；TN 为34，即真实值为0
+预测结果也为0 的个数有34 个；预测准确的共
+有54 个，预测错误共有6 个。
+表7 混淆矩阵
+Table7 Confusion Matrix
+TN
+TP
+FN
+FP
+模型
+SVM
+34
+20
+4
+2
+随机森林 31
+19
+5
+5
+决策树 29
+19
+5
+7
+逻辑回归 32
+20
+4
+4
+图4 的红色曲线表示SVM 模型的ROC 曲线，
+曲线下的面积为0.96；橙色曲线表示随机森林模
+型的ROC 曲线，曲线下的面积为0.91；蓝色曲
+线表示逻辑回归模型的ROC 曲线，曲线下的面
+积为0.95；绿色曲线表示决策树模型的ROC 曲
+线，曲线下的面积为0.79。由图4 可知，决策树
+的AUC 值最小，预测判别性能较差，其余三个
+模型的AUC 值较接近，其中SVM 和逻辑回归的
+值最大，预测性能最好。
+图4 4 种模型的ROC 曲线
+Fig.4 ROC curves of the four models
+以第1 次划分为例，进一步绘制四模型在测
+试集上的预测效果图，如图5 所示。从图5 中可
+以看出，4 种机器学习模型在PCA 降维特征空间
+中的决策边界存在显著差异。支持向量机（SVM）
+生成平滑的曲线边界，能够实现最优化分割，有
+效隔离多数样本点，可以看出图中粉色和蓝色数
+据点绝大部分能够有效进行分割在不同区域。而
+逻辑回归、随机森林和决策树对不同数据类型的
+分割效果较差，这些可视化结果进一步验证了
+SVM 的优越性。
+(a)逻辑回归
+(b)随机森林
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+(c)决策树
+(d)SVM
+图5 4 个模型在测试集下的预测效果图
+Fig.5 Prediction performance of the four models on
+the test set
+3.3.3 模型消融实验
+为了验证本文目标模型的优异性能是源于特征选
+择步骤还是SVM 模型本身，或者源于两者的协同作用，
+本文设计两组消融实验。实验A 为移除RFECV-RF 特
+征选择，直接使用全部13 个特征训练SVM 模型；实
+验B 为采用RFE 进行特征选择，不使用交叉验证，然
+后训练SVM 模型。并与本文提出的RFECV-RF 结合
+SVM 组合模型进行对比。所有实验均重复5 次随机划
+分，取各指标均值与标准差，结果如表8 所示。由表8
+可见，本文模型的准确率为0.8633，较实验A 的
+0.8533 提升约1.17 个百分点，较实验B 的0.8100 提升
+约6.58 个百分点。F1分数和AUC 同样优于实验A 和
+实验B。表明RFECV-RF 特征选择能有效提升SVM
+的预测性能，且交叉验证的引入比单纯采用RFE 更具
+优势。
+表8 模型评价指标值
+Table 8 Model evaluation metrics
+模型
+评价指标
+实验A
+实验B
+本文模型
+0.8533
+0.8100
+0.8633
+准确率
+(0.0245)
+(0.0343) (0.0340)
+0.8717
+0.8210
+0.8920
+精确率
+(0.0485)
+(0.0710) (0.0535)
+0.8083
+0.7627
+0.8083
+召回率
+(0.0446)
+(0.0407) (0.0446)
+0.8369
+0.7885
+0.8466
+F1 分数
+(0.0251)
+(0.0383) (0.0353)
+0.9194
+0.8739
+0.9228
+AUC 值
+(0.0254)
+(0.0221) (0.0271)
+注：表中括号内的数值为重复5 次随机划分得到的各指标
+标准差。
+以第1 次划分为例，实验A 与实验B 的混淆
+矩阵如图6 所示。由图6 可知，实验A 预测准确
+的有53 个，预测错误有7 个；实验B 预测准确
+的有49 个，预测错误有11 个。对比表7 中本文
+SVM 模型的混淆矩阵，实验A 与实验B 预测准
+确性均不比本文模型好，说明不使用特征选择下
+的SVM 模型和使用RFE 下的SVM 模型性能都
+不如RFECV-RF 特征选择的SVM 模型。
+(a)实验A
+(b)实验B
+图6 实验A 与实验B 的混淆矩阵
+Fig.6 Confusion matrices for Experiment A and Experiment
+B
+综上所述，模型消融实验充分证明了本文采
+用的RFECV-RF 特征选择与SVM 模型组合的必
+要性和优越性。
+3.4 基于SHAP 的模型可解释性分析
+3.4.1 特征重要性分析
+基于SHAP 方法计算各特征的平均Shapley
+绝对值，可量化不同特征对模型预测结果的贡献
+程度，进而判断其重要等级。图7 显示了基于
+SVM 模型的特征重要性排序，纵轴按特征重要性
+由高至低排列各输入变量，横轴表示各特征的平
+均SHAP 值。图7 中显示特征重要性排序前五的
+特征分别是thal、ca、cp、oldpeak、trestbps，表
+明这五个特征在模型中被识别为对心脏病患病状
+态判别贡献程度最高的变量。
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+图7 特征重要性排序
+Fig.7 Ranking of feature importance
+3.4.2 特征影响分布分析
+SHAP 特征概要图能够同时呈现各特征对模
+型输出的影响方向与程度，图8 为SHAP 特征概
+要图，按重要性由高至低排列了影响心脏病患病
+的各项特征，其中横轴为SHAP 值，表示特征对
+模型输出的影响，纵轴表示特征按SHAP 值的平
+均绝对值排序的顺序，每个数据点表示一个样本，
+点的颜色对应特征取值，蓝色表示较小的特征值，
+红色表示较大的特征值[22]。从影响方向来看，各
+核心特征呈现差异化分布特征。图8 呈现了重要
+性排序前8 的特征对预测结果的影响方向，正向
+贡献的特征包括thal_6(固定缺陷型地中海贫
+血）、thal_7(可逆缺陷型地中海贫血）、ca(主
+要血管数为1 到3）、cp_4(无症状）；负向贡
+献的特征为thal_3(无地中海贫血）、ca(主要
+血管数为0）、cp_1(典型心绞痛）、cp_2(非
+典型心绞痛）、cp_3(非心绞痛）。ca 的SHAP
+值中正值比例较高，表明血管数量增加与患病概
+率上升相关，且该正向效应随取值增大而增强。
+oldpeak 的SHAP 值随ST 段压低幅度增大由负转
+正。thalach 的SHAP 值呈负相关分布，高心率对
+应以负值为主的SHAP 值。chol、age、trestbps
+三个特征的SHAP 值绝对值均较小，波动范围介
+于-0.10 至0.10 之间，且在正负两侧均有分布。
+图8 特征影响分布
+Fig.8 Feature impact distribution
+3.4.3 单特征依赖分析
+SHAP 单变量依赖图可分析单个特征与
+SHAP 值之间的线性关系，为进一步揭示各核心
+特征取值变化对模型输出的具体影响规律，本文
+基于SHAP 重要性排序选取前5 个核心特征进行
+单特征依赖性分析，结果如图9 所示。图9(a）
+表明，SHAP 值随血管数量增加而上升，说明患
+心脏病风险相应增高；图9(b）显示，无地中海
+贫血者的SHAP 值低于固定缺陷型和可逆缺陷型
+地中海贫血者，表明地中海贫血为心脏病的危险
+因素；图9(c）显示典型心绞痛（赋值1）的
+SHAP 值低于无症状（赋值4）者，无症状对应
+的SHAP 值主要分布于正半轴，而典型心绞痛的
+SHAP 值集中于负半轴，表明需关注无症状人群
+中的潜在风险；图9(d）显示随着运动相对于休
+息引起的ST 段压低取值逐渐升高，SHAP 值由负
+转正，表明运动相对于休息引起的ST 段压低幅
+度增大是患心脏病的风险因素。图9(e）显示最
+大心率与SHAP 值之间呈现明确的负相关趋势，
+当thalach 取值较低时，SHAP 值以正值为主，表
+明低最大心率对模型预测患病有正向贡献；随着
+thalach 取值逐渐升高，SHAP 值逐步由正转负；
+当thalach 取值处于较高水平时，SHAP 值以负值
+为主，表明高最大心率对模型预测患病呈现保护
+性效应，即降低患病风险。
+(a)主要血管数
+(b)地中海贫血
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+(c)胸痛类型
+(d)运动相对于休息引起的ST 段压低
+(e)最大心率
+图9 单特征依赖分析
+Fig.9 Single-feature dependence analysis
+4 结论与展望
+4.1 结论
+本文以UCI 克利夫兰心脏病数据集为研究对
+象，基于RFECV-RF 特征选择方法，采用支持向
+量机（SVM）算法构建心脏病风险评估模型，并
+引入SHAP 方法对模型预测结果进行解释，以增
+强模型的可解释性。首先对UCI 数据库提供的心
+脏病数据集进行预处理，并通过5 次随机划分策
+略，每次仅在训练集内部执行特征选择与模型训
+练，并在测试集上报告多次划分的均值与标准差，
+使性能评估结果更具稳健性；在模型评估阶段，
+采用准确率、精确率、召回率、F1 分数和AUC
+值等作为评价指标，并将SVM 模型的性能与逻
+辑回归、随机森林和决策树模型进行对比，结果
+表明SVM 模型具有较强的泛化能力和更优的分
+类效果；在此基础上，进一步引入SHAP 方法对
+SVM 模型的预测结果进行解释，以识别影响心脏
+病发生的主要因素。增强模型的可解释性有助于
+提升分类识别性能，进而为临床决策提供参考依
+据，具备重要的临床应用价值。
+在特征选择层面，以第1 次划分为例，
+RFECV-RF 方法从13 个临床特征中筛选出8 个
+关键变量：年龄、胸痛类型、主要血管数、地中
+海贫血、静息血压、运动相对于休息引起的ST
+段压低、血清胆固醇及达到的最大心率。在所有
+5 次划分中，所选特征子集均包含这8 个关键变
+量。
+在模型性能层面，SVM 模型在5 次划分上取
+得的平均准确率为0.8633，精确率为0.8920，召
+回率为0.8083,F1 分数为0.8466,AUC 值为
+0.9228。与随机森林、决策树和逻辑回归相比，
+SVM 除召回率略低于逻辑回归外，在所有指标上
+均表现最佳。消融实验的结果显示，移除
+RFECV-RF 特征选择会使模型准确率降低约
+1.17%；用RFE 替换RFECV 则使准确率下降低
+约6.58%。这些结果验证了RFECV-RF 与SVM
+组合策略的有效性，并表明在特征选择过程中，
+交叉验证机制对提升模型泛化能力具有不可替代
+的作用。
+在模型可解释性层面，基于SHAP 方法对全
+部核心特征进行了事后解释分析。分析结果表明
+thal、ca、cp、oldpeak、trestbps 等均为影响心脏
+病的重要特征，其中ca(主要血管数）和thal
+（地中海贫血）的贡献度最高，其SHAP 值明显
+高于其他特征。就thal 而言，thal_6(固定缺陷
+型）和thal_7(可逆缺陷型）与心脏病风险呈正
+相关，即显著增加患病风险，而thal_3(无地中
+海贫血）对风险的增益作用不明显。对于心绞痛，
+综合观察cp_0、cp_1、cp_2 和cp_3 可以看出无
+论是典型心绞痛还是非典型心绞痛，对风险的增
+加不明显。ca 指标的SHAP 值变化趋势显示，主
+要血管数量越多，心血管风险系数越高。thalach
+（最大心率）的SHAP 值分布则显示，最大心率
+值越大，心脏病风险系数随之升高。
+综上，递归特征消除交叉验证结合随机森林
+（RFECV-RF）的特征选择方法与支持向量机
+（SVM）相组合，能够显著提升心脏病预测的准
+确率。引入SHAP 解释框架可缓解黑箱模型在临
+床场景中固有的可解释性不足问题。该方法组合
+具备扎实的方法学价值与较高的临床应用潜力。
+4.2 展望
+未来研究可从以下几个方面进一步扩展。
+在数据层面，本文以UCI 克利夫兰心脏病数
+据集为研究对象，虽然这是一个被广泛应用的标
+准数据，但是由于样本较少，并且来自单个医学
+数据集，因此其在人群中的代表性并不高。今后
+的研究可在不同地域、不同种族和不同社会经济
+背景的大样本多中心病例中，对模型进行验证。
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+在方法层面，RFECV-RF 中的特征选取方法
+是以随机森林作为基评估器，能有效地处理非线
+性关系，但在高维、稀疏、特征之间相互影响的
+情况下，该方法仍然面临着很大的挑战。后续研
+究可以 LASSO 回归、 SHAP 重要度筛选和领域
+知识为基础，建立多层特征筛选方法。另外，本
+文只与四种典型的模型进行对比，尚未与
+XGBoost、 LightGBM 等的梯度提升方法和深度
+学习方法进行过深入的研究。在此基础上，可拓
+展模型的对比度，研究同一特征子集下不同算法
+的识别效果，并通过 Stacking 融合多种强分类器，
+进一步提高预测准确率。
+在解释性层面，现有的研究主要集中在整体
+要素的重要性排序和单一要素的相关性上，缺乏
+对要素之间的相互作用的挖掘。在此基础上，可
+通过构建 SHAP 交互价值矩阵或部分相关图，对
+各关键因子间的协同关系进行系统性研究，从而
+揭示多因子共同暴露下的非线性影响。
+在应用层面，本文方法不仅局限于心脏疾病，
+未来可推广到其它慢性病的发病机制、危险因素
+的辨识，建立适合不同类别疾病的机器学习分析
+流程，并将其与临床医学问题的深度融合。
+参考文献：
+[1] 国家心血管病中心, 中国心血管健康与疾病报告编写
+组, 胡盛寿. 中国心血管健康与疾病报告2025概要[J].
+中国循环杂志, 2026, 41(6):527-563.
+国家心血管病中心, 中国心血管健康与疾病报告编写
+组, Hu Shengshou. Report on cardiovascular health and
+diseases in China 2025: an updated summary[J]. Chinese
+Circulation Journal, 2026, 41(6): 527-563.
+[2] Gibson J T, Rudd J H F. Polygenic risk scores in atrial
+fibrillation: associations and clinical utility in disease
+prediction[J]. Heart Rhythm, 2024, 21(6): 913-918.
+[3] van Dissel A C, D’Alto M, Farro A, et al. Improved risk
+prediction using a refined European guidelines
+instrument in pulmonary arterial hypertension related to
+congenital heart disease[J]. The American Journal of
+Cardiology, 2024, 233: 28-34.
+[4] 宋允轩, 马修远, 王少辰, 等. 机器学习在心力衰竭疾
+病预测中应用的研究进展[J]. 中国循证心血管医学杂
+志, 2023, 15(1): 118-119, 126.
+Song Yunxuan, Ma Xiuyuan, Wang Shaochen, et al.
+Research progress on the application of machine learning
+in heart failure disease prediction[J]. Chinese Journal of
+Evidence-Bases Cardiovascular Medicine, 2023, 15(1):
+118-119, 126.
+[5] Uplopwar A, Vashisth R, Kushwaha A. Cardiovascular
+disease detection using stacking meta-learner with
+pipeline machine learning[J]. Neural Computing and
+Applications, 2025, 37(22): 18219-18232.
+[6] 刘婕, 郝舒欣, 万红燕, 等. 自动化机器学习在疾病预
+测中的应用: 以心脏病预测为例[J]. 中国卫生统计,
+2026, 43(2): 285-290.
+Liu Jie, Hao Shuxin, Wan Hongyan, et al. Application of
+automatic machine learning in disease prediction: taking
+heart disease prediction as an example[J]. Chinese
+Journal of Health Statistics, 2026, 43(2): 285-290.
+[7] 宋雨, 许王琴, 李荣鹏, 等. 基于自适应流形正则化自
+表示的无监督特征选择算法[J]. 重庆工商大学学报
+(自然科学版), 2023, 40(6): 44-52.
+Song Yu, Xu Wangqin, Li Rongpeng, et al.
+Unsupervised feature selection algorithm based on
+adaptive manifold regularization self-representation[J].
+Journal of Chongqing Technology and Business
+University (Natural Sciences Edition), 2023, 40(6): 44-
+52.
+[8] Saranya G, Pravin A. A novel feature selection approach
+with integrated feature sensitivity and feature correlation
+for improved prediction of heart disease[J]. Journal of
+Ambient Intelligence and Humanized Computing, 2023,
+14(9): 12005-12019.
+[9] 张德, 杨雪钧, 张鲁燕, 等. 融合LASSO特征选择与
+Stacking集成学习模型的慢性肾脏病预测方法[J]. 科
+学技术与工程, 2026, 26(12): 4971-4978.
+Zhang De, Yang Xuejun, Zhang Luyan, et al. Chronic
+kidney disease prediction based on LASSO feature
+selection and stacking ensemble learning[J]. Science
+Technology and Engineering, 2026, 26(12): 4971-4978.
+[10] 张侠, 柏莹, 李红. 基于RFECV-RF特征选择的W-
+SVM齿轮故障诊断与优化[J]. 湖北理工学院学报,
+2023, 39(5): 5-10.
+Zhang Xia, Bai Ying, Li Hong. Fault diagnosis and
+optimization of W-SVM gear based on RFECV-RF
+feature selection[J]. Journal of Hubei Polytechnic
+University, 2023, 39(5): 5-10.
+[11] 段春艳, 刘千拓, 王佳洁, 等. 基于Stacking集成学习
+的乳腺癌智能诊断预测模型[J]. 同济大学学报(自然
+科学版), 2025, 53(6): 976-984.
+Duan Chunyan, Liu Qiantuo, Wang Jiajie, et al.
+Intelligent diagnosis and prediction model of breast
+cancer based on stacking ensembled learning[J]. Journal
+of Tongji University (Natural Science), 2025, 53(6): 976-
+984.
+[12] 王雪嫚, 张岩波, 余红梅, 等. 基于因果特征选择和
+深度森林构建DLBCL复发风险预测模型[J]. 中国卫
+生统计, 2026, 43(2): 196-201, 216.
+Wang (Xue)(Man|Yuan), Zhang Yanbo, Yu Hongmei, et
+al. Construction of a relapse risk prediction model for
+DLBCL based on causal feature selection and deep
+forest[J]. Chinese Journal of Health Statistics, 2026,
+43(2): 196-201, 216.
+[13] 罗悦, 周娟. 基于随机森林的中医痰湿体质预测模型
+研究[J]. 世界科学技术-中医药现代化, 2024, 26(7):
+1906-1915.
+Luo Yue, Zhou Juan. Study on prediction model of
+phlegm-dampness constitution of traditional
+ChineseMedicine based on random forest[J].
+Modernization of Traditional Chinese Medicine and
+Materia Medica-World Science and Technology, 2024,
+26(7): 1906-1915.
+[14] 蒋美艳, 张辉. 机器学习算法对心脏病预测效能的研
+究[J]. 中国医学物理学杂志, 2024, 41(7): 905-909.
+Jiang Meiyan, Zhang Hui. Efficacy of machine learning
+algorithms for heart disease prediction[J]. Chinese
+Journal of Medical Physics, 2024, 41(7): 905-909.
+[15] Amjad K, Asif S, Waheed Z, et al. HMS-CTN: a hybrid
+multi-scale convolutional transformer network with
+feature fusion and support vector machine (SVM) for
+enhanced diabetic foot ulcer detection[J]. Journal of
+Bionic Engineering, 2026, 23(4): 2595-2614.
+[16] 王洁, 李金泽, 王子曈, 等. 改进鲸鱼优化LightGBM
+的可解释性心脏病风险预测模型[J]. 北京邮电大学学
+报, 2023, 46(6): 39-45.
+Wang Jie, Li Jinze, Wang Zitong, et al. An interpretable
+prediction model for heart disease risk based on
+improved whale optimized LightGBM[J]. Journal of
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx
+
+Beijing University of Posts and Telecommunications,
+2023, 46(6):
+39-45.
+[17] 傅杰, 甘如美江, 战惠惠, 等. 基于TSGWO-RF-SVM
+的心脏病风险预测[J]. 湘潭大学学报(自然科学版),
+2025, 47(6): 44-58.
+Fu Jie, Gan Rumeijiang, Zhan Huihui, et al. Heart
+disease risk prediction based on TSGWO-RF-SVM[J].
+Journal of Xiangtan University (Natural Science Edition),
+2025, 47(6): 44-58.
+[18] 杨艳平, 李荣. 基于决策树-逻辑回归模型的心脏病影
+响因素[J]. 工业控制计算机, 2024, 37(8):114-116.
+Yang Yanping, Li Rong. Influencing factors of heart
+disease based on decision tree-logistic regression
+model[J]. Industrial Control Computer, 2024, 37(8): 114-
+116.
+[19] Mittelman M, Israel A, Oster H S, et al. Can we identify
+individuals at risk to develop multiple myeloma? A
+machine learning-based predictive model[J]. British
+Journal of Haematology, 2025, 207(2): 387-394.
+[20] Asih P S, Azhar Y, Wicaksono G W, et al. Interpretable
+machine learning model for heart disease prediction[J].
+Procedia Computer Science, 2023, 227: 439-445.
+[21] 马捷, 孙文晶, 郝志远. 基于RF-ISSA-SVM和SHAP
+的疾病诱因可解释性模型: 以肥胖症为例[J]. 数据分
+析与知识发现, 2025, 9(9): 74-87.
+Ma Jie, Sun Wenjing, Hao Zhiyuan. An interpretable
+model for disease causes based on RF-ISSA-SVM and
+SHAP-case study on obesity[J]. Data Analysis and
+Knowledge Discovery, 2025, 9(9): 74-87.
+[22] 周成龙, 凌启鑫, 罗珂, 等. 融合SHAP可解释性框架
+的心脏病预测与特征交互机制挖掘[J]. 赤峰学院学报
+(自然科学版), 2026, 42(4): 90-99.
+Zhou Chenglong, Ling Qixin, Luo Ke, et al. Predicting
+heart disease and mining feature interaction mechanisms
+with an interpretable SHAP framework[J]. Journal of
+Chifeng University (Natural Science Edition), 2026,
+42(4): 90-99.
+[23] 周展, 刘彬, 郑立瑞, 等. 一种面向不平衡数据的心
+脏病风险预测可解释性框架[J]. 湖南中医药大学学报,
+2023, 43(6): 1078-1085.
+Zhou Zhan, Liu Bin, Zheng Lirui, et al. A framework for
+predicting heart disease risk factors with interpretability
+by imbalanced data[J]. Journal of Hunan University of
+Chinese Medicine, 2023, 43(6): 1078-1085.
+[24] 程祉元, 张博良, 蔡雨晨, 等. 融合随机森林与SHAP
+的心脏病预测及其特征分析研究[J]. 智能计算机与应
+用, 2023, 13(11): 172-179.
+Cheng Zhiyuan, Zhang Boliang, Cai Yuchen, et al.
+Combination of Random Forest and SHAP for heart
+disease prediction and feature analysis research[J].
+Intelligent Computer and Applications, 2023, 13(11):
+172-179.
+[25] 巴梦茹, 尹晓红, 李少远. 基于多变量逻辑回归的帕
+金森病认知障碍预测模型[J]. 智能科学与技术学报,
+2024, 6(2): 232-243.
+Ba Mengru, Yin Xiaohong, Li Shaoyuan. A predictive
+model of cognitive impairment in Parkinson’s disease
+based on multivariate logistic regression[J]. Chinese
+Journal of Intelligent Science and Technology, 2024,
+6(2): 232-243.
+[26] 石玉琳, 春意, 刘嘉懿, 等. 基于舌象特征逻辑回归
+的肺癌风险预警模型研究[J]. 中国中医药信息杂志,
+2024, 31(10): 149-156.
+Shi Yulin, Chun Yi, Liu Jiayi, et al. Study on lung cancer
+risk warning model based on tongue image feature
+logistic regression[J]. Chinese Journal of Information on
+Traditional Chinese Medicine, 2024, 31(10): 149-156.
+[27] 魏晓钦, 项明, 申玉洁, 等. 基于机器学习算法构建
+食道闭锁术后吻合口漏概率在线交互式网页计算工具
+及相应风险分层系统[J]. 重庆医科大学学报, 2024,
+49(11): 1457-1464.
+Wei Xiaoqin, Xiang Ming, Shen Yujie, et al.
+Construction of an online interactive calculation tool and
+corresponding risk stratification system for the
+probability of postoperative anastomotic leak in
+esophageal atresia based on machine learning
+algorithms[J]. Journal of Chongqing Medical University,
+2024, 49(11): 1457-1464.
+[28] 牛琬茹, 黄一珉, 付海燕, 等. ROMM: 一种用于联邦
+逻辑回归的加密方法[J]. 小型微型计算机系统, 2025,
+46(6): 1305-1311.
+Niu Wanru, Huang Yimin, Fu Haiyan, et al. ROMM: an
+encryption method for federated logistic regression[J].
+Journal of Chinese Computer Systems, 2025, 46(6):
+1305-1311.
+[29] 皇白雪, 陆虎. 基于无监督图表示学习的脑疾病预测
+算法[J]. 计算机与数字工程, 2026, 54(5): 1279-1282,
+1414.
+Huang Baixue, Lu Hu. Brain disease prediction
+algorithm based on unsupervised graph representation
+learning[J]. Computer and Digital Engineering, 2026,
+54(5): 1279-1282, 1414.
+[30] 薛薇. Python机器学习原理与实践[M]. 北京: 中国人
+民大学出版社, 2021: 141-145.
+Xue Wei. Python machine learning: principles and
+practices[M]. Beijing: China Renmin University Press,
+2021: 141-145.
+投稿地址http://journal.ctbu.edu.cn/zr/ch/index.aspx

@@ -1,0 +1,732 @@
+第47卷第3期
+2 0 2 6年5月
+Vol.47 No.3
+西安交通大学学报（医学版）
+Journal of Xi’an Jiaotong University(Medical Sciences）
+◇智慧医疗专题◇
+May 2026
+探索心脏疾病智能预测：人工智能体与
+文本嵌入模型的综合应用
+徐 帆1，杨 正2，周 睿3，郑莹彬4，刘奕杉5，舒 婷6，赵 敏7
+［1．国家卫生健康委医院管理研究所，北京 100044;2．国家健康医疗大数据研究院（深圳）工程技术研究中心，
+广东深圳 518172;3．香港中文大学（深圳）附属第二医院&深圳市龙岗区人民医院网络中心，广东深圳 518172；
+4．厦门大学附属第一医院信息部，福建厦门 361003;5．太原理工大学软件学院，山西太原 030024；
+6．国家卫生健康委统计信息中心调查评价处，北京 100810;7．厦门市杏林医院，福建厦门 361003］
+摘要：目的 探讨人工智能体（AI智能体）如何整合多种分类算法和文本嵌入模型，以优化心脏疾病诊断中的预测准
+确性和上下文相关性。方法 基于智能体的心脏疾病预测模型（agent-based heart disease prediction,ABHDP）整合
+了分类建模、文档检索和用户交互组件。研究利用心脏疾病临床数据集以及补充数据集，训练了包括随机森林和梯
+度提升在内的多种分类算法，文本嵌入模型以及本地化部署的DeepSeek。采用准确率、精确率、召回率、F1值和受试
+者工作特征（receiver operating characteristic,ROC）曲线分析量化模型性能和效果。结果 对分类和连续变量的分
+析揭示了与心脏疾病患病率相关的重要模式。CatBoost和随机森林等预测模型显示出较高的性能，召回率分别为
+0.980和0.979。在文本嵌入模型方面，FastText的F1评分为46%，而SBERT和OpenAI嵌入模型的表现优于Fast-
+Text，分别达到了95%和96%的F1评分。结论 ABHDP模型可提高心脏疾病管理的准确性和个性化水平，推动精
+准医疗的发展。
+关键词：大型语言模型；SBERT;OpenAI；人工智能体（AI智能体）；基于智能体的心脏疾病预测模型（ABHDP）
+中图分类号：R318.04 文献标志码：A
+DOI:10.7652/jdyxb202603003
+Exploring heart disease smart prediction：integration of
+AI agents and text embedding models
+XU Fan1,YANG Zheng2,ZHOU Rui 3，
+ZHENG Yingbin4,LIU Yishan5,SHU Ting6,ZHAO Min7
+［1.National Institute of Hospital Administration,National Health Commission,Beijing 100044；
+2.National Engineering Technology Research Center for Health and Medical Big Data(Shenzhen），
+Shenzhen 518172;3.Network Center of The Second Affiliated Hospital of Shenzhen,The Chinese
+University of Hong Kong(Shenzhen）&Longgang District People’s Hospital of Shenzhen,Shenzhen
+518172;4.Department of Information,The First Affiliated Hospital of Xiamen University,Xiamen
+361003;5.School of Software Engineering,Taiyuan University of Technology,Taiyuan 030024；
+6.Center for Health Statistics and information,National Health Commission of the People’s
+Republic of China,Beijing 100810;7.Xiamen Xinglin Hospital,Xiamen 361003,China］
+ABSTRACT：Objective To develop an agent-based heart disease prediction(ABHDP)model that combines
+multiple machine learning classifiers with text embedding model to improve prediction performance and contextual
+interpretation in heart disease risk assessment.Methods The proposed ABHDP model integrates three functional
+modules：disease classification,medical knowledge retrieval,and interactive interpretation.A heart disease dataset
+was used together with medical knowledge dataset.Eleven classification algorithms and three text embedding
+approaches were evaluated.Model performance was evaluated using accuracy,precision,recall,F1-score,and
+receiver operating characteristic(ROC）。Results Analysis of categorical and continuous variables revealed
+收稿日期：2025-09-12 修回日期：2026-03-20
+基金项目：国家卫生健康委医院管理研究所医疗人工智能临床应用研究课题（No.YLXX24AIA020）
+Supported by the National Health Commission Hospital Management Institute’s Research Topic on Clinical Application of Medical
+Artificial Intelligence(No.YLXX24AIA020）
+通信作者：舒婷，研究员。E-mail：nctingting@126.com；赵敏，主任医师。E-mail：xmzmdyyy@xmu.edu.cn
+网络出版地址：https：//link.cnki.net/urlid/61.1399.R.20260327.1135.002(2026-03-30）
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+3期
+415
+徐 帆，杨 正，周 睿，等。探索心脏疾病智能预测：人工智能体与文本嵌入模型的综合应用
+important patterns associated with the prevalence of heart disease.Among the classification algorithms,CatBoost
+and random forest achieved the highest recall values(0.980 and0.979,respectively）。For text embedding methods，
+FastText produced an F1-score of 46%，while SBERT and OpenAI achieved substantially higher scores of 95%and
+96%．Conclusion The proposed ABHDP model demonstrates the potential to support interpretable and intelligent
+clinical decision-making for heart disease risk prediction,thus promoting the development of precision healthcare.
+KEY WORDS：large language model;SBERT;OpenAI;AI agent;agent-based heart disease prediction(ABHDP）
+model
+近年来，心血管疾病是全球范围内威胁人类健康
+的重要公共卫生问题之一，其高发病率和高死亡率给
+医疗系统带来了长期压力。如何在疾病早期阶段识
+别潜在高风险人群，对于疾病预防、临床干预以及医
+疗资源配置具有重要意义。在传统医疗实践中，心脏
+疾病的诊断通常依赖医师对临床症状、实验室检查结
+果以及影像学资料的综合判断。这类方法在临床经
+验丰富的情况下能够提供有效支持，但在面对大规
+模、多维度数据时往往难以充分挖掘其中的复杂关
+联。因此，近年来研究者逐渐尝试借助数据分析和机
+器学习方法，对临床数据中的潜在模式进行识别，从
+而辅助心脏疾病风险评估［1］。
+随着临床数据不断积累，机器学习与人工智能
+（artificial intelligence,AI）被应用于心脏疾病预测研
+究［2-4］。包括随机森林、梯度提升以及CatBoost等集成
+学习方法［5］在处理结构化临床数据方面表现出较好的
+稳定性和预测能力［6］。研究表明通过特征工程和参数
+优化可以进一步提升模型的性能［7］。深度学习技术如
+卷积神经网络和Transformer模型能够自动学习高维
+数据特征，在心脏疾病预测［8］方面具有较大潜力。
+然而这些新技术在心脏疾病风险预测的应用仍
+面临三个挑战。首先，部分研究依赖单一类型的数据
+来源，未能充分利用不同医疗数据之间可能存在的互
+补信息。其次，部分研究仅关注单一算法模型的性能
+表现，对于多模型协同分析的潜在优势探讨较少。此
+外，在特征表达层面，结构化临床数据与症状文本信
+息之间的语义关联仍有待进一步挖掘。
+因此，本研究构建了一种基于智能体的心脏疾病
+风险预测模型［9］。该模型能够整合大语言模型、结构
+化临床数据和症状文本信息［10］，分析和比较不同算
+法和文本嵌入技术［11］的表现。本研究旨在探索多模
+态数据在心脏疾病风险预测中的应用，提供数据驱动
+的临床决策支持。本研究重点关注以下几个研究问
+题：①不同分类算法在心脏疾病风险预测中的准确
+率、精确率、召回率及F1值表现如何；②不同分类变
+量与连续变量在心脏疾病风险预测中的作用；③不同
+文本嵌入技术在医学语料检索中的差异。
+1 材料与方法
+本研究提出的基于智能体的心脏疾病预测模型
+（agent-based heart disease prediction,ABHDP）的
+整体架构如图1所示。该模型由三个核心模块组成：
+①分类建模模块；②文档检索与信息提取模块；③用
+户查询与响应生成模块。
+首先，利用临床心脏疾病数据集训练疾病风险预测模型；随后，通过医学对话数据集检索与患者症状相关的医学文本信息；最后，将模型
+预测结果与检索到的医学知识片段一同输入大语言模型进行综合分析，从而生成智能化的问答响应。
+图1 ABHDP模型结构
+Fig.1The architecture of the ABHDP model
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+416
+1.1 数据收集和预处理
+本研究使用了来自Kaggle的心脏疾病临床数据
+集［12］，该数据集是机器学习资料库中的数据［13］的简
+化版本。原始数据集中包含来自克利夫兰、匈牙利、
+瑞士和长滩的1 025名患者信息，共76个特征。本
+研究选择了其中的14个关键特征进行分析［14］，包
+括：年龄、性别、胸痛类型、静息血压、血清胆固醇、空
+腹血糖、静息心电图结果、最大心率、运动诱发心绞
+痛、ST段压低值、运动峰值ST段的斜率、通过荧光
+透视观察的主要血管数目、地中海贫血以及心脏疾
+表1 心脏疾病临床数据集的特征信息
+Tab.1Feature information of heart disease dataset
+特征
+代码
+1．年龄
+age
+2．性别
+sex
+3．胸痛类型
+cp
+4．运动诱发心绞痛
+exang
+5．静息血压
+trestbps
+6．血清胆固醇
+chol
+7．空腹血糖
+fbs
+8．静息心电图结果
+restecg
+9．最大心率
+thalach
+10．运动峰值ST段的斜率
+slope
+11.ST段压低值
+oldpeak
+12．通过荧光透视观察的主要血管数目
+ca
+13．地中海贫血症
+thal
+14．心脏疾病
+target
+本研究还引入了两个辅助数据集，进一步检验
+ABHDP模型在不同数据环境中的泛化能力和稳定
+性。第一个数据集是心脏疾病症状描述及相应的医
+学建议［15］，包含22 911条记录。第二个数据集是症
+状描述以及疾病标签［16］，包含965条记录，主要用于
+评估不同文本嵌入模型的聚类能力。
+1.2 分类模型
+本研究采用多种机器学习分类算法对心脏疾病
+发生风险进行预测。基于数据集中选取的关键特征，
+构建并比较不同模型的预测性能，以识别在该任务中
+第47卷
+病。每个属性均按其类别进行了编码赋值，这与许多
+已发表的论文中使用相同数据集处理严重不平衡数
+据的做法类似［13］。有关这些特征及其相关值的详细
+说明见表1。我们将整个数据集分为训练集和测试
+集，以评估模型在未见数据上的表现。其中70%用
+于训练模型（即训练集），30%用于测试模型的性能
+（即测试集）。并设定随机种子为42。所有模型训
+练、交叉验证以及软投票权重确定均仅在训练集内部
+完成，测试集仅用于最终评估，从而避免交叉验证、模
+型选择与最终测试之间的数据重叠问题。
+描述
+数据类型
+以年计算
+数值
+男=1；女=0
+二进制
+典型心绞痛=0；
+分类变量
+非典型心绞痛=1；
+非心绞痛性疼痛=2；
+无症状=3
+假=0；真=1
+二进制
+毫米汞柱（mmHg）
+数值
+毫克每分升（mg/dL）
+数值
+二进制
+>120mg/dL=1；
+≤120mg/dL=0
+正常=0；
+分类变量
+异常=1；
+超常=2
+每分钟心跳次数（BPM）
+数值
+上升（Up）=0；
+分类变量
+平坦（Flat）=1；
+下降（Down）=2
+相对于静息状态，运动诱发的ST波抑制
+数值
+分类变量
+0,1,2,3
+正常=0；
+分类变量
+固定缺损=1；
+可逆性缺损=2；
+不可逆性缺损=3
+假=0；真=1
+二进制
+表现最优的算法。所使用的分类模型包括随机森林
+（random forest）、朴素贝叶斯（naive Bayes）、梯度提
+升（gradient boosting）、K近邻（K-nearest neigh-
+bors,KNN）、逻辑回归（Logistic regression）、支持向
+量机（support vector machine,SVC）、基于随机梯度
+下降优化的线性分类器（SGD-based linear classifier）、
+J48决策树（J48）。此外，本研究还引入多种集成学
+习方法，包括AdaBoost、CatBoost以及Bagging策略
+（表2）。其中，Bagging作为一种通用集成框架，通过
+对基学习器进行自助采样（bootstrap sampling）并进
+西安交通大学学报（医学版）
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+3期
+行集成，从而提高模型稳定性和泛化能力，而非独立
+的分类算法。通过对这些模型进行系统比较，可以全
+表2 模型的超参数配置
+Tab.2Model hyperparameter configurations
+模型
+超参数配置
+417
+面评估不同算法在心脏疾病预测任务中的适用性。
+徐 帆，杨 正，周 睿，等。探索心脏疾病智能预测：人工智能体与文本嵌入模型的综合应用
+n_estimators=100,criterion=＇gini＇，max_depth=None,min_samples_split=2,min_samples_leaf=1,max
+随机森林
+_features=＇sqrt＇，bootstrap=True,n_jobs=None,random_state=42
+朴素贝叶斯 priors=None,var_smoothing=1e-9
+loss=＇log_loss＇，learning_rate=0.1,n_estimators=100,subsample=1.0,criterion=＇friedman_mse＇，max_
+梯度提升
+depth=3,min_samples_split=2,min_samples_leaf=1,random_state=42
+n_neighbors=5,weights=＇uniform＇，algorithm=＇auto＇，leaf_size=30,p=2,metric=＇minkowski＇，metric_
+K近邻
+params=None,n_jobs=None
+Logistic回归 penalty=＇l2＇，dual=False,tol=1e-4,C=1.0,fit_intercept=True,solver=＇lbfgs＇，max_iter=100,multi_
+class=＇auto＇，class_weight=None,n_jobs=None,random_state=42
+C=1.0,kernel=＇rbf＇，degree=3,gamma=＇scale＇，probability=True,shrinking=True,tol=1e-3,class_
+支持向量机
+weight=None,random_state=42
+SGD-based lin- loss=＇hinge＇，penalty=＇l2＇，alpha=0.0001,l1_ratio=0.15,fit_intercept=True,max_iter=1000,tol=1e-
+ear classifier 3,shuffle=True,random_state=42,learning_rate=＇optimal＇，eta0=0.0,power_t=0.5,early_stopping=
+False
+criterion=＇gini＇，splitter=＇best＇，max_depth=None,min_samples_split=2,min_samples_leaf=1,max_
+J48
+features=None,random_state=42
+estimator=DecisionTreeClassifier(max_depth=1），n_estimators=50,learning_rate=1.0,algorithm=＇
+AdaBoost
+SAMME.R＇，random_state=42
+iterations=1000,depth=6,learning_rate=0.03,loss_function=＇Logloss＇，random_seed=42,verbose=
+CatBoost
+None
+Bagging策略 estimator=DecisionTreeClassifier(），n_estimators=10,max_samples=1.0,max_features=1.0,boot-
+strap=True,bootstrap_features=False,random_state=None
+1.3 文本嵌入
+医疗对话数据集的文本表示通过SBERT的
+“distiluse-base-multilingual-cased”模型［17］生成，将
+文本信息转换为语义向量表示。该嵌入方法能够在
+保持语义相似性的同时降低文本表示的维度，从而提
+高语义检索效率［18］。生成的向量表示被存储在
+Chroma向量数据库中［19］，该数据库针对高维向量数
+据进行了优化，可高效执行相似性搜索并支持文档向
+量的长期存储与管理。
+1.4 AI智能体
+系统的用户界面采用Vue框架［20］构建，并通过
+RESTful API［21］与后端服务进行通信。该界面用于
+接收用户输入并展示系统响应，从而实现用户与后端
+模块之间的信息交互。在模型层面，本研究基于
+LLaMA架构［22］构建本地大语言模型，并加载Deep-
+Seek-R1-Distill-Llama-8B模型［23］的预训练参数。所
+提出的AI智能体属于任务导向型智能体，主要用于
+整合结构化数据预测结果与医学知识检索模块，以完
+成多步骤决策任务。该智能体在预设的医疗决策流
+程中承担多种功能角色，包括疾病风险分类、医学知
+识检索以及诊疗建议生成等。与近年来研究中具有
+复杂规划能力的自主智能体不同，本文所构建的智能
+体主要用于整合结构化数据预测结果与外部医学知
+识，并在统一框架下完成多步骤任务处理。系统整体
+工作流程包括三个阶段，①风险预测阶段：利用结构
+化临床变量（如年龄、性别、胸痛类型、血压和胆固醇
+等）训练机器学习分类模型，对患者的心脏疾病风险
+进行预测，并输出风险概率。②医学知识检索阶段：
+利用向量化语义匹配方法在医疗知识语料库中进行
+检索，从医疗对话数据和医学知识文本中提取与患者
+症状及潜在风险因素相关的语料片段。③诊疗建议
+生成阶段：模型将预测结果与检索到的医学知识片段
+共同输入大语言模型进行综合分析，从而生成基于检
+索增强生成（retrieval-augmented generation,RAG）［24］
+的医学建议。
+1.5 统计学方法
+本研究采用准确率（accuracy）、精确率（preci-
+sion）、召回率（recall）和F1值（F1-score）作为主要评
+价指标。准确率反映模型整体分类正确的比例，即正
+确预测样本数占全部样本数的比例；精确率表示被模
+型判定为正类样本中真实正类所占比例；召回率用于
+衡量模型识别全部真实正类样本的能力。F1值是精
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+418
+确率与召回率的调和平均，用于综合评价模型在不平
+衡数据情况下的表现。上述指标的计算公式分别在
+公式（1）至公式（4）中给出，其中TP、FP、TN和FN
+分别表示真阳性、假阳性、真阴性和假阴性。
+TP+TN
+（1）
+Accuracy=
+TP+TN+FP+FN
+TP
+（2）
+Precision=
+TP+FP
+TP
+（3）
+Recall=
+TP+FN
+F1-score=2·（Precision·Recall） （4）
+Precision+Recall
+受试者工作特征（receiver operating characteris-
+tic,ROC）曲线［25］是用于评估预测模型性能的工具，
+尤其在分类任务中得到广泛应用。ROC曲线通常通
+过调整分类算法的判别阈值来绘制，将真阳性率与假
+阳率进行对比。ROC曲线下面积（the area under
+the ROC curve,AUC）［26］是分类研究中常用的指
+标，可以全面总结分类器的有效性。
+为提高评估结果的稳健性，本研究采用重复5折
+交叉验证（10次重复）对模型进行性能评估［27］。对于
+召回率排名前7的分类器，将其纳入加权软投票集成
+方法中［28］，并且使用重复5折交叉验证的召回率作
+为权重，该集成技术旨在通过基于预先分配的权重来
+组合所选分类器的输出。
+在评估不同的文本嵌入模型（包括FastText的
+图2 心脏疾病数据集中特征的分布情况及其箱线图对比
+第47卷
+“cc.zh.300”［29］、SBERT的“distiluse-base-multilingual-
+cased”以及OpenAI的“text-embedding-3-large”）
+时，本文同样采用精确率、召回率和F1值作为评价指
+标。此外，利用t-分布随机邻域嵌入方法（t-distributed
+stochastic neighbor embedding,t-SNE）［30］对高维向
+量进行降维，以便进行可视化分析。
+2 结 果
+2.1 数据概述
+为更直观地理解数据特征，本研究利用条形图和
+箱线图对变量分布进行了可视化分析（图2）。对于
+分类变量，条形图展示了性别、胸痛类型（cp）、空腹血
+糖（fbs）、静息心电图结果（restecg）、运动诱发心绞痛
+（exang）、运动峰值ST段斜率（slope）、主要血管数量
+（ca）以及地中海贫血（thal）等特征在两类目标组
+（0与1）中的分布情况。结果显示，不同类别变量在
+两组之间呈现出明显差异。
+对于连续变量，箱线图展示了年龄、最大心率
+（thalach）、静息血压（trestbps）、血清胆固醇（chol）以
+及运动诱发的ST段压低值（oldpeak）的统计分布。
+图中给出了各变量的中位数、四分位区间以及异常值
+情况。从整体分布来看，年龄的变化相对平稳，而
+thalach与oldpeak的取值范围较宽，同时存在一定数
+量的离群值，表明这些指标在不同个体之间差异较大。
+西安交通大学学报（医学版）
+Fig.2Heart disease dataset feature distribution and box plots
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+3期
+2.2 通过重复5折交叉验证评估分类模型的准确性
+图3中的柱状图展示了多个机器学习模型在使
+用重复5折交叉验证预测结果时的性能对比。所评
+估的模型包括随机森林、朴素贝叶斯、梯度提升、逻辑
+回归、基于随机梯度下降优化的线性分类器、J48、
+AdaBoost、CatBoost和Bagging策略。在使用5折
+交叉验证的情况下，召回率排名前7的模型包括
+CatBoost、随机森林、Bagging策略、J48、梯度提升、
+SVC、逻辑回归。这些模型被选择用于软投票。
+CatBoost的权重为0.146 6，随机森林权重为0.146 4，
+Bagging策略的权重为0.146 3,J48权重为0.144 6，
+梯度提升权重为0.144 1，而SVC和逻辑回归的权重
+分别为0.137 6和0.134 5。
+使用5折交叉验证的排名前7的模型包括：CatBoost、随机森林、Bag-
+ging策略、J48、梯度提升、SVC、逻辑回归。
+图3 重复5折交叉验证的模型召回率比较
+Fig.3Comparison of model recall using repeated 5-fold cross-
+validation
+此外，模型的误差条表示各折之间准确率的标准
+差，结果显示Bagging策略的误差较小，说明其预测
+结果更为一致。相反，基于随机梯度下降优化的线性
+分类器和朴素贝叶斯的误差条较大，表明其预测性能
+的波动性较大。
+2.3 使用ROC分析评估分类模型性能
+图4展示了7种分类算法的准确率、精确率、召
+回率、F1值和ROC曲线。随机森林和Bagging策略
+的表现最佳，F1值均达到0.990。逻辑回归的性能
+相对较低，F1值为0.834。CatBoost和随机森林的
+AUC值分别达到0.997 7和0.999 2，显示出较高的
+阳性与阴性样本区分能力。逻辑回归的AUC为
+0.924 6，其分类判别能力相对较弱。
+2.4 评估嵌入模型的性能
+图5展示了FastText、SBERT和OpenAI在测
+试数据集上的聚类可视化结果。从整体分布情况来
+看，FastText的向量表示较为分散，不同疾病类别之
+间存在一定程度的重叠。SBERT在向量空间中形成
+419
+了更加清晰的类别边界，疾病标签之间的区分度明显
+提高。OpenAI表现出最为明显的聚类结构，不同疾
+病类别在向量空间中呈现出更加集中和紧密的分布。
+图4 分类器的模型性能指标和ROC曲线比较
+Fig.4Model performance metrics and ROC curve for various
+classifiers
+图中不同颜色代表不同疾病类别，如颈椎病、尿路感染、过敏和糖尿病等。
+图5 FastText、SBERT和OpenAI的聚类效果
+Fig.5Clustering performance of FastText,SBERT,and
+OpenAI
+徐 帆，杨 正，周 睿，等。探索心脏疾病智能预测：人工智能体与文本嵌入模型的综合应用
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+420
+表3进一步给出了三种嵌入模型在疾病标签分
+类任务中的定量结果。相比FastText模型的精确
+率、召回率和F1值，SBERT与OpenAI模型表现更
+好。综合考虑模型性能以及成本、安全性和部署便利
+性等因素，本研究最终选择SBERT作为后续系统中
+的文本嵌入模型。
+表3 FastText、SBERT和OpenAI的分类性能对比
+Tab.3Classification performance of FastText,SBERT and
+OpenAI
+嵌入模型
+精确率
+召回率
+F1值
+FastText
+0.52
+0.44
+0.46
+SBERT
+0.95
+0.95
+0.95
+0.97
+0.96
+0.96
+OpenAI
+2.5 临床一致性初步探索分析
+通过图6所示的用户界面，用户能够简洁高效地
+输入信息。在提交症状和健康指标后，ABHDP模型
+不仅提供了详细的诊断风险分析，还给出了个性化的
+健康建议。如图7所示，当患者填完特征量并输入问
+题：“我最近在工作的时候总会时不时的感觉到头晕，
+头痛，而且没什么精神，还再次出现肢体麻木、夜尿增
+多，胸闷的症状，特别像高血压的症状，所以我想知道
+我是不是高血压啊？”系统首先通过嵌入模型将该问
+题向量化，并在医疗知识语料库中进行语义检索。随
+后，系统结合结构化临床预测模型的风险评估结果以
+及检索到的医学知识，由大语言模型输出综合建议，
+例如提示患者相关症状可能与心血管疾病风险相关，
+并建议进一步进行心电图或心血管检查。
+为初步探索ABHDP模型在真实医疗场景下的
+适用性，本研究开展了一项基于历史病例的回顾性验
+证分析。本研究从厦门市杏林医院过往病历库中随
+机抽取了100例疑似心脏病患者的脱敏历史数据，并
+邀请了3名具有资深临床经验的心血管科医师组成
+专家组，在对模型预测结果盲测的前提下，对病例进
+行独立审核与一致性评价。需说明的是，本环节仅作
+为模型功能的初步验证，而非大规模临床确证试验。
+通过对专家的访谈及对模型输出建议的专业性评估，
+专家组对ABHDP模型提供的健康洞见及风险预警
+能力的认可度达到95%，认为其生成的个性化建议
+能够有效辅助医师进行初步筛查并提升患者的健康
+意识。同时本研究计算模型预测结果与临床金标准
+诊断的一致性，Kappa系数为0.70、灵敏度为0.84、
+特异度为0.86，这些结果表明，ABHDP模型在预测
+准确性方面具有潜力。通过个性化建议和分析患者
+第47卷
+数据，该工具提供初步健康建议，鼓励患者进行后续
+的医学咨询以获取明确的诊断和管理方案。
+图6 患者数据输入界面
+Fig.6Patient data input interface for health screening
+图7 ABHDP模型的诊断结果和建议
+Fig.7Diagnostic results and recommendations from the
+ABHDP model
+西安交通大学学报（医学版）
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+3期
+3 讨 论
+3.1 主要研究结果
+本研究对11种机器学习算法及3种文本嵌入方
+法进行了系统比较，在此基础上构建了ABHDP预测
+模型。ABHDP模型将结构化临床数据分析、医学知
+识检索与医疗建议生成等功能进行整合，实现了多模
+态数据的协同利用。ABHDP模型利用大语言模型
+和文本嵌入技术来提升对医学语义的理解，为心脏疾
+病临床多模态数据的综合运用提供了一种新的思路。
+3.2 分类变量与连续变量的分析启示
+在分类变量中，性别和胸痛类型的分布差异较为
+明显。不同性别患者的心脏疾病风险存在一定差异，
+这种差异可能与生理结构、生活方式以及行为因素有
+关。不同类型胸痛患者的心脏疾病风险存在较大差
+异，表明胸痛类别可能与心脏疾病有更强的关联性。
+此外，空腹血糖分布也表现出一定差异。在连续变量
+中，年龄是心脏疾病的重要危险因素，其风险累积效
+应与流行病学研究结论基本一致。最大心率和ST
+段压低的数值范围相对较广，也存在一些离群点，这
+表明最大心率和ST段压低的偏离可能显著增加心
+脏疾病风险。
+3.3 机器学习模型性能分析
+CatBoost与随机森林整体表现最为稳定。随机
+森林通过集成多棵决策树的预测结果，有效降低模型
+方差并提高预测稳定性，因此在处理复杂医疗数据时
+具有较强鲁棒性。CatBoost则在类别变量处理方面
+表现突出，其排序提升算法能够减少训练过程中的偏
+差，并在一定程度上提升模型效率。梯度提升方法和
+SVC同样表现出较好的分类能力，能够捕捉数据中
+的非线性关系。相比之下，AdaBoost的表现略低，这
+可能与其在复杂数据环境下对细粒度模式的识别能
+力有限有关。综合来看，集成学习方法和非线性模型
+在心脏疾病风险预测任务中具有较好的应用前景，也
+为后续模型优化与临床应用研究提供了参考。
+3.4 句子嵌入模型性能比较
+在医学文本分类任务中，不同嵌入模型在语义表
+示能力方面表现出一定差异。FastText在词汇级表
+示方面具有一定优势，但其主要基于词级别嵌入构建
+语义表示，因此在处理复杂医学描述时，难以充分捕
+捉句子层面的语义关系。在本研究实验中，不同医学
+标签之间存在较明显的重叠现象，说明其在语义区分
+能力方面存在一定局限。相比之下，SBERT模型在
+421
+句子语义表示方面表现更加稳定。由于其专门针对
+句子级语义表示进行设计，该模型能够更好地捕捉文
+本上下文信息，从而使不同医学类别在嵌入空间中的
+分布更加清晰。实验结果也显示，SBERT在精确率、
+召回率以及F1值等指标上均取得明显提升。
+OpenAI嵌入模型在聚类效果方面表现最为突出，其
+生成的向量表示在不同医学标签之间呈现出更加紧
+密且清晰的聚类结构。这一结果可能与模型训练规
+模较大以及语义建模能力更强有关。
+然而，在实际应用场景中，模型选择仍需综合考
+虑计算成本和部署可行性等因素。综合性能与资源
+消耗，SBERT在许多实际应用环境中可能是更具性
+价比的选择。
+3.5 现实应用中的挑战
+尽管本研究模型在实验数据集上取得了较好的
+预测效果，但在真实医疗环境中应用仍然面临多方面
+挑战。
+首先，医疗数据本身具有较强的复杂性和异质
+性。尽管公开数据集为模型开发提供了良好基础，但
+真实世界电子病历［31］往往存在数据缺失、记录标准
+不一致以及症状描述主观性较强等问题。这些因素
+可能对模型稳定性和泛化能力产生影响。因此，在未
+来研究中有必要引入更大规模、更多来源的真实世界
+数据进一步验证。
+其次，计算资源需求也是一个需要考虑的问题。
+随机森林、梯度提升以及大规模嵌入模型在训练和推
+理过程中均需要一定计算资源，这对于信息化基础设
+施相对有限的小型医疗机构而言可能构成一定障碍。
+因此，如何在保持预测精度的同时降低模型复杂度，
+是未来研究的重要方向。需要指出的是，尽管ABHDP
+模型在本研究数据集中取得了接近0.99的AUC，但
+这一结果仍需谨慎解读。实验数据往往具有较高的
+结构化程度，而真实世界医疗数据可能包含更多噪声
+和缺失信息，因此模型性能在实际应用中可能出现一
+定程度下降。此外，对于罕见心血管疾病病例，模型
+仍可能存在一定过拟合风险。因此，有必要在更大规
+模多中心数据上进行进一步验证。
+此外，模型在实际医院系统中的部署也需要解决
+系统兼容性问题。许多医疗机构仍然依赖传统信息
+系统架构，新模型在接入电子病历系统时需要保证数
+据接口的兼容性，并尽量避免对临床工作流程产生
+干扰。
+徐 帆，杨 正，周 睿，等。探索心脏疾病智能预测：人工智能体与文本嵌入模型的综合应用
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+422
+3.6 局限性和未来方向
+本研究仍存在三方面局限。第一，本研究所使用
+的是公开数据集，案例分析仅包含100例样本，导致
+在样本结构和地域分布方面可能存在一定局限。未
+来研究可以在多中心临床数据上验证模型的性能。
+第二，ABHDP模型选取了14个主要特征变量，而在
+真实临床环境中，心脏疾病风险往往受到多种因素共
+同影响。未来研究可以引入更多临床特征，以进一步
+提升模型的预测能力。第三，模型的集成和文本嵌入
+技术虽然在一定程度上提高了性能，但也增加了计算
+复杂度，会对模型的部署带来一定的挑战，特别是在
+资源受限的医疗机构中。未来研究可以探索更加轻
+量化方案，以提高系统的可推广性。
+4 结 论
+本研究提出了ABHDP模型。该框架通过整合
+结构化临床数据与非结构化医学文本信息，实现疾病
+风险预测、医学知识检索以及诊疗建议生成等功能。
+总体来看，结合机器学习方法与知识检索机制的模型
+在医学决策支持领域具有一定应用前景。未来通过
+引入更大规模的数据资源以及更加丰富的临床变量，
+有望进一步提升该框架在真实医疗环境中的实用价
+值，提升心脏疾病的早期诊断与管理。
+参考文献：
+［1］HUANG J,DANG F L.Analysis of inducing factors of chronic
+pulmonary heart disease caused by chronic obstructive pulmo-
+nary disease at high altitude through epidemiological investiga-
+tion under intelligent medicine and big data［J］。J Healthc Eng，
+2022,2022：2612074.
+［2］MOHAMMAD U,SAEED F.Robustness of ML-based seizure
+prediction using noisy EEG data from limited channels［C］//
+2024 20th International Conference on Distributed Computing
+in Smart Systems and the Internet of Things(DCOSS-IoT）。
+Abu Dhabi,United Arab Emirates：IEEE,2024：620-626.
+［3］LIN X,SU Z Q,LIU Y L,et al.SuperMetal：agenerative AI
+framework for rapid and precise metal ion location prediction
+in proteins［J/OL］。bioRxiv(2025-03-21）［2026-03-20］。ht-
+tps：//pubmed.ncbi.nlm.nih.gov/40196543/．
+［4］NEUMANN A U,BORM K J,TRAIDL HOFFMANN C.
+Comprehensive risk stratification to guide an optimal preven-
+tive strategy for breast radiation dermatitis-reply［J］。JAMA
+Oncol,2024,10(8）：1137-1138.
+［5］SUN X Y.EcoCurrentNet an integrated DNN-CatBoost model
+for predicting optoelectronic material performance under
+varying conditions［J］。Sci Rep,2025,15(1）：41485.
+［6］HOSSAIN M R.Optimizing heart disease prediction：a com-
+第47卷
+parative study of machine learning techniques［J］。Asian J
+Cardiol Res,2024,7(1）：348-359.
+［7］DISSANAYAKE K,MD J M.Comparative study on heart
+disease prediction using feature selection techniques on classifi-
+cation algorithms［J］。Applied Computational Intelligence and
+Soft Computing,2021,2021(1）：5581806.
+［8］KAUSHAL P,SINGH S,VIJAYVERGIYA R.A kernel at-
+tention-based transformer model for survival prediction of
+heart disease patients［J］。J Cardiovasc Transl Res,2024,17
+（6）：1295-1306.
+［9］GISKE C G,BRESSAN M,FIECHTER F,et al.GPT-4-based
+AI agents-the new expert system for detection of antimicrobial
+resistance mechanisms？［J］。J Clin Microbiol,2024,62(11）：
+e0068924.
+［10］TARAMASCO C,PINEIRO M,ORMEÑO-ARRIAGADA P，
+et al.Multimodal dataset for sensor fusion in fall detection［J］。
+PeerJ,2025,13：e19004.
+［11］ATZBERGER D,CECH T,SCHEIBEL W,et al.A large-
+scale sensitivity analysis on latent embeddings and dimensional-
+ity reductions for text spatializations［J］。IEEE Trans Vis Com-
+put Graph,2025,31(1）：305-315.
+［12］SMITH J.Heart disease dataset［DS/OL］。［2026-03-20］。
+https：//www.kaggle.com/datasets/johnsmith88/heart-disease-
+dataset.
+［13］JANOSI A,STEINBRUNN W,PFISTERER M,et al.Heart
+disease［DS/OL］。（1988-07-01）［2026-03-20］。https：//
+archive.ics.uci.edu/dataset/45/heart+disease.
+［14］ALMUSTAFA K M.Prediction of heart disease and classifiers’
+sensitivity analysis［J］。BMC Bioinformatics,2020,21(1）：
+278.
+［15］TOYHOM.Chinese-medical-dialogue-data［DS/OL］。［2026-03-
+20］。https：//github.com/Toyhom/Chinese-medical-dialogue-
+data.
+［16］GRETELAI.Symptom_to_diagnosis［DS/OL］。［2026-03-20］。
+https：//huggingface.co/datasets/gretelai/symptom_to_diagno-
+sis.
+［17］SANTANDER CRUZ Y,SALAZAR COLORES S,PAREDES
+GARCIA W J,et al.Semantic feature extraction using SBERT
+for dementia detection［J］。Brain Sci,2022,12(2）：270.
+［18］DIVEICA V,MURAKI E J,BINNEY R J,et al.Mapping
+semantic space：exploring the higher-order structure of word
+meaning［J］。Cognition,2024,248：105794.
+［19］TEJADA-CASADO M,PÉREZ M M,DELLA BONA A,et al.
+Chroma-dependence of CIEDE2000 acceptability thresholds for
+dentistry［J］。J Esthet Restor Dent,2024,36(3）：469-476.
+［20］YI F,ZHANG C,ZOU Y,et al.Three-dimensional crystal
+Vue imaging technology assessment of Sylvian fissures at
+20-32+6 weeks’normal gestation［J］。Eur Radiol,2023,33
+（4）：2358-2366.
+［21］GAVALI S,ROSS K E,COWART J,et al.iPTMnet RESTful
+API for post-translational modification network analysis［J］。
+西安交通大学学报（医学版）
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版
+
+3期
+Methods Mol Biol,2022,2499：187-204.
+［22］LI D,GUPTA K,BHADURI M,et al.Comparative diagnos-
+tic accuracy of GPT-4o and LLaMA 3-70b：proprietary vs.
+open-source large language models in radiology［J］。Clin
+Imaging,2025,118：110382.
+［23］HUSSAIN Z S,DELSOZ M,ELAHI M,et al.Performance of
+DeepSeek,Qwen2.5 MAX,and ChatGPT assisting in diagno-
+sis of corneal eye diseases,glaucoma,and neuro-ophthalmology
+diseases based on clinical case reports［J/OL］。medRxiv(2025-
+03-17）［2026-03-20］。https：//pmc.ncbi.nlm.nih.gov/articles/
+PMC11957078/．
+［24］REVATHI A R,AGASH A A.Pomegranate disease diagnosis
+with severity estimation and treatment remedies using deep
+learning and RAG-based LLM［J］。Sci Rep,2025,15(1）：
+41278.
+［25］WEI X P,LI M,TU Y B,et al.ROC-guided virtual screen-
+ing,molecular dynamics simulation,and bioactivity validation
+assessment Z195914464 as a 3CL Mpro inhibitor［J］。Biophys
+Chem,2025,317：107357.
+［26］GATTI D,RAVELING L,PETRENCO A,et al.Valence
+without meaning：investigating form and semantic components
+in pseudowords valence［J］。Psychon Bull Rev,2024,31(5）：
+2357-2369.
+423
+［27］SEJUTI Z A,ISLAM M S.A hybrid CNN-KNN approach for
+identification of COVID-19 with 5-fold cross validation［J］。
+Sens Int,2023,4：100229.
+［28］VORMITTAG P,KLAMP T,HUBBUCH J.Optimization of
+a soft ensemble vote classifier for the prediction of chimeric
+virus-like particle solubility and other biophysical properties
+［J］。Front Bioeng Biotechnol,2020,8：881.
+［29］AKBAR S,RAZA A,AWAN H H,et al.pNPs-CapsNet：pre-
+dicting neuropeptides using protein language models and Fast-
+Text encoding-based weighted multi-view feature integration
+with deep capsule neural network［J］。ACS Omega,2025,10
+（12）：12403-12416.
+［30］MUTHURAJ R,GOPAL D,AHMED I,et al.Insightful
+t-SNE guided exploration spotlighting palbociclib and ribociclib
+analogues as novel WEE1 kinase inhibitory candidates［J］。J
+Biomol Struct Dyn,2025,43(9）：4716-4728.
+［31］ACACIO-CLARO P J,ESTUAR M R J E,VILLAMOR D A
+R,et al.Understanding adoption of electronic medical records
+（EMRs)during a health emergency：an analysis of EMR usage
+logs from rural health facilities in the Philippines［J］。Acta Med
+Philipp,2024,58(22）：7-13.
+（编辑 张 敏）
+徐 帆，杨 正，周 睿，等。探索心脏疾病智能预测：人工智能体与文本嵌入模型的综合应用
+本刊网址：http：//yxxb.xjtu.edu.cn微信公众号：西安交通大学学报医学版

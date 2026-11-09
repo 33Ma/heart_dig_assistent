@@ -1,0 +1,809 @@
+电子测量与仪器学报
+第39 卷 第9 期
+Vol. 39 No. 9
+2025 年9 月
+JOURNAL OF ELECTRONIC MEASUREMENT AND INSTRUMENTATION
+·192·
+DOI: 10. 13382/j.jemi.B2407936
+融合注意力残差机制的BP 神经网络在
+冠状动脉疾病诊断中的应用*
+张汇文1 杨晓霞 高
+1
+娜1 王 宁 张翠翠
+1
+2
+300222;
+( 1．天津职业技术师范大学天津市信息传感与智能控制重点实验室 天津
+天津 300072)
+2．天津大学海洋科学与技术学院
+摘 要: 在医疗健康领域，冠状动脉疾病作为心脏病的一种，对人民的生命健康造成严重威胁。但由于导致冠状动脉疾病发
+病的影响因素较为复杂，且在发病初期存在隐匿性，导致多数患者错过最佳治疗时段而无法痊愈甚至出现更悲剧的结果。为
+帮助人群在发病初期进行准确的诊断预测并提供相应的预防措施和治疗手段，各类基于机器学习诊断算法被广泛应用于医疗
+健康领域。目前，随着人工智能领域的快速发展，深度学习也被逐渐应用于心脏病的诊断预测中。通过对克利夫兰心脏病数
+据集中的数据分布进行可视化，通过特征选择，揭示特定医学指标与冠状动脉疾病之间的紧密联系，以探索关键因子对冠状
+动脉疾病发病的影响趋势。构建基于融合注意力与残差机制的BP 神经网络的冠状动脉疾病诊断预测模型，模型通过残差结
+构缓解梯度消失，保持梯度流动的稳定性，并通过多头注意力机制捕捉特征间的深层依赖关系，实现特征权重的动态分配。
+该数据集在冠状动脉疾病诊断模型上进行训练获得97. 1%的准确率。为了验证方法的有效性，将其与现有机器学习算法进行
+比较评估并进行对比实验，发现该算法在关键性能指标上均展现出更为优越的表现，验证了其在医疗健康领域，尤其是在心
+脏病诊断中的实际应用价值。
+关键词: 冠状动脉疾病; 深度学习; 特征选择; BP 神经网络; 残差结构; 注意力机制
+中图分类号: TN98; TP391. 41
+文献标识码: A 国家标准学科分类代码: 510. 4030
+Application of BP neural network with attention residual mechanism
+in the diagnosis of coronary artery disease
+1
+1
+1
+2
+Zhang Huiwen1 Yang Xiaoxia Gao Na Wang Ning Zhang Cuicui
+( 1.Tianjin Key Laboratory of Information Sensing and Intelligence Control,Tianjin University of Technology and Education，
+Tianjin 300222,China; 2.School of Marine Science and Technology,Tianjin University,Tianjin 300072,China)
+Abstract: Coronary artery disease ( CAD) ，as one of typical heart diseases,threatens people’s lives and health.However,due to its
+complex influencing factors and its subtle initial symptoms,many patients miss the optimal treatment window for recovery.To enable
+early diereses prevention so as to get most appropriate treatment,many machine learning methods have been widely applied in this field，
+among which deep learning has been acknowledged as one of the cutting-edge techniques for CAD diagnosis.This paper develops a
+tailored BP neural network,which integrates BP with an attention-residual-mechanism for CAD detection.In order to find the key factors
+that contribute to CAD prediction,we fist investigate a feature selection strategy based on data visualization and using several statistical
+methods on the commonly used cleveland heart disease dataset.Then,the attention-residual-mechanism informed BP network is
+conducted for CAD detection.The amended BP network alleviates the gradient vanishing problem by using a residual structure and
+captures deep dependencies between features through a multi-head attention mechanism,which can be used for dynamic allocation of
+feature weights.Extensive experiments demonstrate the better performance of our method than existing machine learning algorithms.It can
+achieve an accuracy of 97. 1% on Cleveland Heart Disease dataset,which verifies the effectiveness of our method in CAD diagnosis.
+Keywords: coronary artery disease; deep learning; feature selection; BP neural network; residual structure; attention mechanism
+收稿日期: 2024-11-04 Received Date: 2024-11-04
+* 基金项目: 国家重点研发计划项目( 2022YFC3104600) 、国家自然科学基金( 62001329) 、天津市科技计划项目( 24YDTPJC00740) 、海南省重点
+研发计划项目( ZDYF2024SHFZ051) 资助
+
+第9 期
+0 引 言
+冠状动脉疾病( coronary artery disease,CAD) 是一种
+常见的心脏病，具体表现为冠状动脉发生粥状硬化，难以
+向心肌输送足够的血液、氧气和营养。冠状动脉粥状硬
+化由多种因素导致，且在发病前没有显著症状甚至察觉
+不到。然而，当病症发作时，冠状动脉发生粥状硬化可能
+导致患者心脏功能受损，引发其他器官系统的并发症，严
+重时甚至可能威胁生命。据统计，心脏病是导致全球人
+口残疾和死亡的首要原因之一［1］，冠状动脉粥样硬化是
+导致心肌缺血和损伤的主要原因。为了更好地预防心脏
+病对患者生命健康的危害，CAD 早期的诊断和预防治疗
+具有重要意义。
+传统的医疗诊断方法主要取决于医生个人的经验，
+且由于患者检测指标的多样化和复杂化，可能导致不同
+医生给出的诊断结果存在差异。随着医疗和人工智能领
+域的快速发展，基于机器学习的传统分类算法率先应用
+于医疗信息的诊断预测，辅助医护人员做出决策，完成
+CAD 早期的诊断和预测，防止部分患者因症状较轻或部
+分医疗发展落后地区医生经验不足造成漏诊误诊的事
+故。在医学领域应用智能算法早期，科学家将传统分类
+算法与健康医疗大数据结合，算法实现对CAD 的预测。
+克利夫兰诊所通过判别函数模型和贝叶斯算法对CAD
+进行预测，在高患病率环境中，当概率阈值为0. 4 时，判
+别模型准确率为71% 低于准确率为74% 的贝叶斯算
+法［2］。Blachnik 等［3］使用SVM 算法进行心血管疾病诊
+断预测，准确率高于80%。该类方法为医生诊断提供了
+帮助，但逻辑回归、支持向量机( SVM) 等分类算法通常
+对临床特征独立处理，无法对特征间的相关性进行交互
+分析，使特征因子的协同作用信息丢失，存在一定不足。
+后续研究中，Luna 等［4］使用单棵决策树构建树状模型应
+用于心血管疾病预测。尹海宁等［5］将Logistic 回归模型
+和随机森林模型用于对AMI 患者MACE 风险的预测价
+值评估工作。El-shafiey 等［6］基于随机森林引入混合遗
+传算法和粒子群优化方法来进行CAD 诊断准确性的关
+键特征提取。杨敬桑等［7］采用逻辑回归、随机森林、神经
+网络3 种方式来对CAD 数据分类，在逻辑回归算法中取
+得88. 52%的最优准确率。随机森林、决策树等已在特征
+相关信息利用方向取得一定优势，但机器学习模型结构
+简单［8］，通过决策边界分割进行逻辑判断，缺少非线性函
+数做支撑，面对具有复杂特征的CAD 数据时，仍难以做
+出优秀的判断。王健等［9］将卷积神经网络应用于CAD
+预测，实现精度的有效提高，达到89. 89%的预测精度。
+但CAD 诊断中，CNN 网络更适用于二维图像数据的特征
+学习，对于本文所使用的一维特征数据存在局限性，难以
+·193·
+达到良好效果。
+BP 神经网络作为一种典型的神经网络模型，可将传
+统算法进行深度扩展，并在一维数据的分类预测上占据
+主导性地位。其具有多层网络结构［10］，且相比线性模型
+引入非线性函数来提高模型对复杂数据的拟合能力，可
+以自动从输入数据中学习特征与CAD 患病结果之间的
+复杂映射关系。但传统BP 神经网络平等对待所有特
+征，无法聚焦关键特征组合，且在多层网络结构上数据随
+着梯度的加深存在梯度消失、过拟合等网络退化问题严
+重。为解决上述问题，本文使用残差结构通过跳跃连接
+的形式构建数据输入以直接映射的方式加入到深层网络
+中，突破传统网络的链式堆叠模式，以跨层连接的方法有
+效缓解深层网络梯度消失问题，并通过特征复用提升数
+据特征信息的无损传递。此外本文使用多头注意力机制
+通过多个注意力头同时捕捉特征之间的复杂交互作用，
+分别学习特征间的相关关系并动态分配特征权重增强模
+型对复杂特征关系的学习能力，挖掘静态数据深层关联
+以提高模型的表达和泛化能力。最终，本文通过对CAD
+数据的特征进行特征选择并将其分布进行可视化，清晰
+地观察到不同特征与CAD 发病率之间的相关性，确定影
+响冠状动脉发生病变的关键因子，更为后续的模型构建
+提供重要依据。随后对影响CAD 发病的关键因子采用
+融合注意力与残差机制的BP 神经网络构建CAD 诊断的
+预测模型。为了验证所构建模型的有效性，本研究选择
+在医疗健康领域广泛应用的克利夫兰数据库中的心脏病
+数据集进行实验，在UCI 官网Heart Disease Data Set 中的
+其他3 个心脏病数据集上进行验证，并通过对比实验以
+及与现有机器学习诊断算法的最优结果进行对比评估模
+型性能，达到更好的效果。
+1 CAD 数据预处理
+1. 1 数据集概述
+克利夫兰心脏病数据集是来源于UCI 机器学习数据
+库中的开源数据集，其数据收集了303 名患者的CAD 样
+本数据。在该数据集中，每个样本的原始数据具有76 个
+属性，但这些属性中存在患者个人信息及临床检测项目
+的年月日等信息均与CAD 的发生没有直接关系，并且在
+这76 个属性中部分数据具有大量缺失值影响数据分析
+和训练的效果，不适合模型训练。出于以上原因，参考文
+献［2-7］所引用的特征属性，最终每个样本保留了原始数
+据76 个属性中缺失值较少的13 个特征属性和1 个目标
+变量。所选目标变量分别为年龄( age) 、性别( sex) 、胸痛
+类型( chest pain type,cp) 、静息血压( resting blood
+pressure,trestbps) 、血清胆固醇水平( serum cholesterol
+level,chol) 、空腹血糖( fasting blood sugar,fbs) 、静息心
+融合注意力残差机制的BP 神经网络在冠状动脉疾病诊断中的应用
+
+第39 卷
+电子测量与仪器学报
+·194·
+电图结果( resting electrocardiogram result,restecg) 、最大
+心率( maximum heart rate achieved,thalach) 、运动引起的
+心绞痛( exercise-induced angina,exang) 、运动相对于休
+息引起的ST 压低( exercise-induced ST depression，
+oldpeak) 、最高运动ST 段斜率( maximum slope of the ST
+segment,slope) 、冠状动脉造影时荧光显色的主要血管数
+目( coronary artery,ca) 、地中海贫血类型( thalassemia
+type,thal) 和CAD 是否存在的目标变量( prediction of the
+presence of heart disease,target)［11］。
+1. 2 数据预处理
+在官网原始CAD 数据集中，cp 列存在4 个缺失值，
+thal 列存在2 个缺失值，其行索引分别为166、192、287、
+302、87、266。为了处理这些缺失数据，将其填充为0。但
+由于cp 和thal 均为分类数据，为了防止网络在处理数据
+时将填充的0 错误地解读为有效类别，使用独热编
+码( one-hot encoding) 的方式来规避这一问题。例如，分
+类数据为［1,2,3,4］时，经过独热编码处理后，对于不
+同类别数据的所属形式表现为［1,0,0,0］、［0,1,0，
+0］、［0,0,1,0］、［0,0,0,1］。这样，被填充为0 的缺
+失值表示为［0,0,0,0］，避免了被识别为第0 类的缺
+陷，确保了数据分析结果的准确性不受影响。thal 其他
+指标normal、fixed、reversible 分别用1、2、3 进行替换。
+target 指标中患有CAD 和不患有CAD 分别用1 和0 进行
+替换。然后统一将数据集各字段特征值进行标准化处
+理。经过预处理后的数据集各属性特征描述如表1
+所示。
+表1 样本各特征属性的描述
+Table 1 Description of feature attribute of samples
+属性 类型 取值区间
+描述
+age 连续 29~77 岁 对象的年龄，数字表示
+sex 离散 0,1
+1 代表男性，0 代表女性
+1 表示无症状，2 表示非心绞痛，3
+cp 离散 1,2,3,4 表示非典型性心绞痛，4 表示典型
+心绞痛
+trtbps 连续 94~200 Hg
+静息血压数值
+chol 连续126~564 mg/dL 通过BMI 传感器获取的胆固醇
+0 表示≤120 mg/dL,1 表示>120
+fbs 离散 0,1
+mg/dL
+0 表示正常，1 表示有ST-T 波异
+restecg 离散 0,1,2
+常，2 表示明确的左心室肥厚
+thalach 连续71~202 b/min 最大心率
+exang 离散 0,1
+0 表示否，1 表示是
+oldpeak 连续 0~6. 2 mV
+运动时的ST 段数值
+1 表示上升，2 表示平坦，3 表示
+slope 离散 1,2,3
+下降
+ca 连续 0,1,2,3 荧光显色的主要血管数目
+1 = 正常，2 = 固定缺陷，3 = 可逆
+thal 离散 1,2,3
+缺陷
+target 离散 0,1
+0 表示否，1 表示是
+1. 3 特征选择
+在构建CAD 诊断模型前，对数据集中特征属性进行
+特征选择。本文通过逻辑回归、决策树、随机森林、
+SHAP、F 值检验等多种特征选择方法选出3 组重要特
+征。分别对所选特征及特征组合在传统基础BP 神经网
+络上进行实验验证，发现当特征选为age、sex、thalach、
+exang、oldpeak、slope、ca、thal、cp 时模型准确率最高，同时
+这组特征是其中逻辑回归、决策树、F 值检验所得到的一
+致识别结果，具体实验准确率验证结果如表2 所示。其
+中F 值检验不仅仅可以判断单个变量对因变量的可解释
+能力，并且可以将所有自变量看作一个整体，分析其联合
+作用对因变量是否有显著的预测能力，筛选对分类任务
+具有显著区分能力的特征。F 检验所得分值代表特征与
+目标变量间的相关程度，其重要性排序如图1 所示。其
+中thalach、oldpeak 和thal 得分最高，这些特征对CAD 诊
+断影响最为显著，slope、cp、exang、ca、age 以及sex 对CAD
+诊断影响次之。因此基于多种实验结果共识以及基础网
+络实验验证以此组特征作为CAD 诊断预测的关键因子。
+通过对关键因子进行分析，可以准确地把握各个特征对
+诊断结果的影响并了解其发病趋势及病理特征，为后续
+模型的诊断预测提供理论依据。
+表2 基于不同特征选择方法的准确率对比
+Table 2 Performance comparison of different
+feature selection methods
+特征选择方法
+所选关键因子
+准确率/%
+age、trestbps、thalach、exang、oldpeak、
+89. 6
+SHAP
+slope、ca、thal、cp
+age、chol、thalach、exang、oldpeak、slope、
+随机森林
+91. 7
+ca、thal、cp
+多种方法特征 age、sex、thalach、exang、oldpeak、slope、
+93. 9
+组合
+ca、thal、cp、chol、trestbps
+逻辑回归、决策 age、sex、thalach、exang、oldpeak、slope、
+95. 3
+树、F 值
+ca、thal、cp
+图1 特征重要性得分
+Fig.1 The F-value of each feature
+
+第9 期
+首先对样本数据的年龄和性别进行密度分析。通过
+绘制被测整体人群、CAD 患者以及正常人的年龄段核密
+度估计图，直观地比较这3 类人群年龄密度分布情况。
+如图2 所示，CAD 患者的年龄集中在40 ~70 岁之间，说
+明CAD 在中老年人群中具有较高发病风险，且发病人数
+聚集在60 岁左右。而正常人集中在40~60 岁，其分布情
+况几乎与被测人群年龄段相同。为了进一步探究性别因
+素对CAD 患病概率的影响，绘制数据集全体样本性别比
+例和数据集中CAD 患者性别比例对比，如图3 所示。图
+3( a) 中数据集的全体样本中男性占比67. 7%，大约为女
+性群体的2 倍，但图3( b) 中数据集CAD 患者中男性占
+比80. 7%，竟超出女性群体4 倍，CAD 患者的性别分布
+较总体样本发生明显偏移，一定程度说明男性更容易患
+病。因此应该对中老年人群尤其是男性群体加以关注和
+预防，做好早期筛查和诊断工作，及时有效地降低CAD
+发病风险，保障公众的健康与安全。
+图2 CAD 患者核密度估计图
+Fig.2 The visualization of age distribution of
+CAD using kernel density estimation
+cp、exang、ca 和thal 的CAD 患病人数统计图如
+图4( a) ~( d) 所示。胸痛是CAD 患者常见的症状，
+图4( a) 中存在典型心绞痛( 即cp 取值为4 时) 的患者
+中，CAD 发病占1 /2 左右。而图4( b) 运动会诱发心绞痛
+的患者中CAD 发病概率超过50%，说明是运动后出现心
+绞痛是CAD 患病的显著信号，其反映了心脏在高需求状
+态下供血不足。ca 表示冠状动脉的钙化程度，其荧光显
+色血管数目越多表明动脉硬化越严重。图4( c) 中ca 数
+量大于1 的患者大概率患有CAD 且随荧光显色血管数
+目的增加患病概率会显著增加。表明冠状动脉钙化［12］
+是CAD 的一个重要表征因素。地中海贫血作为一种遗
+传性血液疾病，图4( d) 中患有可逆缺陷型地中海贫血的
+患者中，CAD 发病率较高。这可能是因为具有可逆缺陷
+的地中海贫血症导致血液携氧能力下降造成心脏代偿性
+增大及功能受损，增大了CAD 患病风险。
+·195·
+图3 数据集总体性别比例与患CAD 子集性别比例对比
+Fig.3 Comparison of the gender ration between the entire
+dataset sample and the CAD patient subset
+在心脏病学中，ST 段的变化［13］是评估心肌电生理活
+动及冠状动脉供血状态的重要指标之一。ST 相关因素
+与CAD 关系的蜂群图如图5 所示。在患有CAD 的群体
+中，运动诱发的ST 段变化斜率普遍呈平坦或下降趋势，
+且在运动状态下ST 段的数值异常偏高，这强烈暗示了心
+肌细胞供血能力不足或心肌细胞受损。图中ST 段数值
+尖峰在伴随斜率平坦或下降时的样本人群中几乎全部为
+CAD 患者，这个现象在视觉上直观的呈现出ST 相关因
+素与CAD 患病的相关关系为CAD 的早期诊断和风险评
+估提供了重要依据。
+年龄-最大心率及CAD 关系的散点图如图6 所示，
+通过散点图可以看出，患有CAD 的患者年龄较大并且心
+率较低。其中40 ~70 岁病的被测试者在进行高强度活
+动或特定测试时，心率普遍集中在140 ~180 次/min。随
+着年龄的增长，人体的生理机能包括心血管系统会有所
+衰退，可能导致最大心率的自然下降，但更显著地影响最
+大心率的降低因素是CAD。这一结果表明年龄与最大心
+率之间呈负相关［14］，并且是否患有CAD 与最大心率之
+间也呈负相关，但CAD 对最大心率的影响更突出。
+尽管通过多种方法共识筛选出关键因子有助于提高
+模型性能，但特征因子与目标变量中潜在的非线性映射
+融合注意力残差机制的BP 神经网络在冠状动脉疾病诊断中的应用
+
+第39 卷
+电子测量与仪器学报
+·196·
+图4 相关因素患CAD 人数柱状图
+Fig.4 The symptoms of CAD patients
+关系难以被传统线性模型充分捕捉。深度神经网络模型
+可以自主学习特征间的深层关系［15］，对多因子协同作用
+进行端到端建模，有效提高模型性能。
+图5 ST 相关因素与CAD 关系的蜂群图
+Fig.5 Bee swarm plot of the relationship between
+ST-related factors and CAD
+图6 年龄-最大心率-CAD 关系的散点图
+Fig.6 Scatter plot of the relationship among age，
+thalach,and CAD
+2 算法网络结构
+2. 1 融合注意力与残差机制的BP 神经网络
+本文构建了一个融合注意力与残差机制的BP 神经
+网络，其整体架构如图7 所示。该模型定义了两个Block
+模块作为特征提取模块进行特征提取和转换，每个Block
+模块以线性层、批量归一化层( batch normalization,BN) 、
+ReLU 激活函数及Dropout 丢弃层构成。输入通过跳跃连
+接到特征提取模块后形成残差结构，增强模型的学习能
+力和梯度传播。经残差连接后的特征以多头注意力机制
+的3 个头并行处理数据捕捉特征间的相关性，并拼接不
+同层次特征实现模型对输入数据的高效表征学习。对拼
+接后的特征进行线性变换在分类器模块利用softmax 分
+类器完成分类任务。
+
+第9 期
+图7 融合注意力与残差机制的BP 神经网络结构
+Fig.7 The structure of BP neural network informed with
+attention and residual mechanisms
+2. 2 残差连接
+残差连接指的是将维度相同的输入特征经短路路径
+直接添加到网络主路径的某一层输出上。这种线性叠加
+操作为信息和梯度的传播提供一个快速通道，使得信息
+可以更自由地流动，并且有效避免了梯度消失问题［16］。
+本文将输入特征维度din 经残差调整( residual
+adjustment) 进行线性变换Wres( x) 维度映射成与主路输
+出维度h2 一致后获得残差特征Xres与主路输出f( x) 相
+加得到残差结构输出以增强梯度传播的稳定性，缓解深
+层网络的退化问题。残差调整与残差连接( residual
+additoins) 公式如下:
+Residual Adjustment: Xres = Wres·x
+( 1)
+Residual Additions: X = f( x) + Xres
+( 2)
+2. 3 多头自注意力机制
+多头注意力机制由多个自注意力机制构成［17］，它通
+过模拟人类注意力的聚焦特性使用多个独立的注意力
+头，分别计算注意力权重，自动调整每个头的关注重点并
+将它们的结果进行拼接或加权求和，增强模型对特征之
+间复杂关系的学习能力［18］。本文使用3 个头的注意力
+·197·
+机制，将残差结构输出通过线性层形成查询向量( query，
+Q) 、键向量( key,K) 和值向量( value,V) 并将其分割成
+3 个头的分别计算注意力，单个头执行缩放点积注意力
+计算注意力权重，如式( 3) 所示。
+QiKiT
+Attentioni( Qi,Ki,Vi) = Softmax(
+) Vi
+( 3)
+■kd
+式中: dk 其中为键向量维度，i ∈{ 1,2,3} 。
+最后沿特征维度将每个头的输出拼接，并通过线性
+投影恢复维度以增强模型的表达能力和泛化能力，如
+式( 4) 所示。
+MultiHead( Q,K,V) = Concat( Att1,Att2,Att3) WO
+( 4)
+式中: WO 为输出线性投影矩阵; Att1、Att2、Att3 分别为3
+个注意力头计算的注意力权重。
+2. 4 激活函数
+激活函数在深度学习网络中把输入非线性的映射给
+输出以帮助网络学习复杂的特征属性关系。常见的激活
+函数［19］主要有ReLU 激活函数，Sigmoid 激活函数、Tanh
+激活函数和Softmax 激活函数等。本文除分类器的输出
+层外均使用ReLU 激活函数，解决了反向传播过程中的
+梯度消失问题，同时因ReLU 激活函数中无指数计算使
+计算更简单。分类器输出层使用sigmoid 激活函数更适
+用于CAD 诊断的二分类任务。
+2. 5 网络参数设置
+实验在使用的PC 端为LENOVO 制造的81LG 型号。
+处理器搭载了基础频率为1. 80 GHz 的Intel Core i7-
+8565U CPU，该CPU 支持睿频约2. 0 GHz，拥有8 个处理
+核心，内存配置了8 GB 的RAM。并在该CP 端下载
+Python3. 8 版本，使用CPU+2. 4. 1 版本的Pytorch 框架构
+建融合注意力与残差机制的BP 神经网络模型对克利夫
+兰数据集进行处理。该模型两个Block 模块线性层分别
+将特征选择后的9 个特征维度映射到128 维、从128 维
+压缩至54 维，每个Block 经线性变换后进行批量归一化
+及ReLU 激活函数处理后随机失活30%的神经元作为正
+则化处理，保持特征的鲁棒性。注意力机制嵌入维度为
+54，采用三头配置，每个注意力维度为18，计算缩放点积
+注意力局部窗口大小K = 3。优化器采用AdamW，学习率
+为1×10-4，权重衰减为1×10-3，将权重衰减与梯度更新
+分开处理，避免权重衰减对偏置参数的不必要影响，提高
+模型的训练效果。模型还引入早停机制监测验证集F1
+分数，在连续15 个Epoch 无提升时终止训练。将克利夫
+兰数据集按7 ∶3的比例划分训练集和测试集，在该网络
+模型的预测性能。这一步骤不仅验证了模型在未见数据
+上的泛化能力，同时也为评估模型的实际应用价值提供
+重要依据。
+融合注意力残差机制的BP 神经网络在冠状动脉疾病诊断中的应用
+
+第39 卷
+电子测量与仪器学报
+·198·
+3 结果评估分析
+3. 1 评估指标
+在评估模型时，使用准确率( accuracy) 、精确
+度( precision) 、召回率( recall) 以及F1 分数( F1 score) 等
+多个性能指标，量化地评价模型在实际应用中的表现。
+准确率:
+TP + TN
+( 5)
+Accuracy =
+TP + FN + FP + TN
+精确度:
+TP
+( 6)
+Precision =
+TP + FP
+召回率:
+TP
+( 7)
+Recall =
+TP + FN
+F1 分数:
+F1 = 2· Precision·RecallPrecision + Recall
+( 8)
+式中: TP 和TN 分别表示被准确预测为患有CAD 和不患
+有CAD 的患者样本个数; FP 和FN 分别表示被错误预测
+为患有CAD 和不患有CAD 的患者样本个数。
+3. 2 评估结果
+在CAD 诊断过程中，需要对多种化验指标进行综合
+分析来判断患者患病情况。为了更加快速、更加显著地
+得到CAD 的诊断结果，从众多因素中筛选出对诊断结果
+有显著影响的关键因子进行分析以提高诊断的准确性。
+本文通过特征选择找出对CAD 影响显著的关键因子为
+age、sex、thalach、exang、oldpeak、slope、ca、thal、cp。将这些
+关键因子作为CAD 诊断模型的输入，并验证对比特征选
+择前后的模型性能。实验结果显示模型在进行特征选择
+后准确率提高2. 3%，彰显了特征选择的重要性和有效
+性。最终在构建的CAD 诊断模型上测试集准确率达到
+97. 1%，损失值仅为0. 093，这表明模型能够达到相对较
+高的准确率。
+3. 3 对比实验
+为验证本文所构建CAD 诊断预测模型的有效性，通
+过构造传统BP 神经与引入注意力与残差机制两处改进
+后的4 种模型配置进行对比实验，获得不同模型在训练
+过程中准确率和损失变化的对比曲线如图8、9 所示。单
+独引入注意力机制的网络模型准确率提升最快，但损失
+曲线存在较大波动，表明注意力机制强化了关键特征的
+提取但同时可能因注意力权重的动态调整引入了优化噪
+声，使其鲁棒性不足。单独引入残差结构的网络模型对
+比传统BP 神经网络也表现出更优的性能，对BP 神经网
+络损失下降滞后且停滞于较高水平的情况有所改善，有
+效缓解了网络退化问题。融合注意力与残差机制的BP
+神经模型的准确率最高且损失值最低，其损失曲线收敛
+后变化平滑且改善了波动问题，表明残差连接在稳定梯
+度传播的同时增强了模型训练的鲁棒性，而注意力机制
+在动态特征分配中对模型稳定性的破坏也得到改善。基
+于以上分析，注意力与残差机制的引入显著提高了模型
+的准确率且具有较强的鲁棒性。
+图8 准确率对比曲线
+Fig.8 Accuracy comparison of different methods
+changing along with epochs
+图9 损失对比曲线
+Fig.9 Loss comparison of different methods
+changing along with epochs
+同时在UCI 官网Heart Disease Data Set 中的其他3
+个心脏病数据集上进行验证，并通过对比实验对比传统
+BP 神经与引入融合注意力与残差机制两处改进后的性
+能差异，验证模型在实际医学诊断中的泛化能力和鲁棒
+性。UCI 官网Heart Disease Data Set 中的其他3 个心脏
+病数据集分别为匈牙利数据集、弗吉尼亚长滩数据集和
+瑞士数据集，其均为CAD 数据集且样本分类极不平衡，
+
+第9 期
+具体类别分布如表3 所示。分别进行对比实验验证的准
+确率结果如表4 所示，通过实验数据的验证及交叉对比，
+可以清晰地观察到引入注意力与残差机制的BP 神经网
+络在4 个数据集上取得最佳效果。尽管在其他3 个数据
+集上表现效果稍逊于克利夫兰数据集，但其性能差异主
+要源于特征数据存在冠状动脉造影时荧光显色的主要血
+管数目和地中海贫血类型的数据缺失，且缺失特征被验
+证为影响CAD 诊断关键因子。虽然数据质量制约了模
+型的泛化能力，但仍取得了相对不错的预测性能。因此，
+所提方法不仅能够准确诊断预测CAD 的患病情况，还能
+有效应对数据不平衡的问题，从而验证了模型的鲁棒性。
+表3 验证数据集样本分布
+Table 3 Sample distribution of the validation dataset
+患CAD
+未患CAD
+总数
+匈牙利
+106
+188
+294
+弗吉尼亚长滩
+149
+51
+200
+瑞士
+115
+8
+123
+表4 每个数据集在不同模型上的准确率
+Table 4 The performance comparison of different
+(%)
+methods on variant datasets
+BP+残差+注意力 BP+注意力 BP+残差 BP
+克利夫兰
+0. 971
+0. 969
+0. 958 0. 953
+匈牙利
+0. 900
+0. 898
+0. 898 0. 831
+长滩
+0. 949
+0. 895
+0. 750 0. 700
+瑞士
+0. 945
+0. 936
+0. 864 0. 859
+为了更加有效地评估本模型的性能，通过计算模型
+准确率、精确度、召回率和F1 分数评价模型各项指标并
+与经典机器学习算法得到的最优结果作比较，发现基于
+融合注意力与残差机制的BP 神经网络的CAD 诊断预测
+模型不仅在准确率上有较大提升，并且在其检测精度和
+召回数量上的提升效果也显著，表明模型不仅能准确识
+别患有CAD 的患者而且漏检结果的概率较低，体现了融
+合注意力与残差机制的BP 神经网络在CAD 诊断预测中
+的核心竞争力。其对比表格如表5 所示。
+表5 各模型在克利夫兰数据集中的对比结果
+Table 5 Comparison of our method with existing methods
+on the Cleveland heart disease dataset
+召回率 F1 分数
+模型
+准确率 精确度
+逻辑回归［7］
+0. 885 0. 878 0. 906 0. 892
+随机森林［20］
+0. 869 0. 853 0. 906 0. 879
+支持向量机［21］ 0. 842 0. 844 0. 887 0. 863
+决策树［20］
+0. 803 0. 857 0. 750 0. 800
+朴素贝叶斯［20］ 0. 869 0. 900 0. 844 0. 871
+K 最近邻［22］
+0. 907 0. 385 0. 114 0. 173
+融合注意力与残差机
+0. 971 0. 975 0. 965 0. 970
+制的BP 神经网络
+·199·
+综上所述，深度学习的引入显著提高了以往基于机
+器学习的CAD 诊断预测模型的预测准确性和性能。并
+通过对比经特征选择前后的模型和不同数据集对比实验
+验证分析可以清楚地看到特征选择及注意力残差机制引
+入的有效性和重要性。
+4 结 论
+本文提出一种融合注意力与残差机制的BP 神经网
+络模型应用于CAD 的诊断预测。其针对现有机器学习
+模型和传统BP 神经网络所存在的特征间相关信息利用
+不足，模型泛化能力的局限性以及深层网络退化的问题
+进行革新。通过对克利夫兰数据集进行特征选择并可视
+化特征分布规律，降低数据维度减少冗余信息并为后续
+模型构建提供理论依据。融合注意力机制以提高模型对
+特征交互信息的捕捉能力，动态聚焦关键特征。引入残
+差结构缓解梯度消失促进信息的高效传递，并优化样本
+信息在模型训练中的利用率。在改进过程中通过两者的
+协同作用实现训练准确率的优化和稳健性的平衡，最终
+实现分类诊断的功能。通过实验的反复验证及各类理论
+模型的对比，该CAD 诊断预测模型分类性能达到97. 1%
+的准确率，显著优于传统机器学习模型和传统BP 神经
+网络模型。此外，对UCI 官网Heart Disease Data Set 中的
+其他3 个心脏病数据集应用此模型仍能获得较高的准确
+率，验证了所提模型在CAD 诊断中显著的泛化能力和鲁
+棒性。此研究为CAD 诊断预测提供了更有效的决策机
+制，未来继续发展有助于实现CAD 早期的诊断和预测，
+为深度学习算法应用于医疗诊断领域开拓新思路。
+虽然该模型在CAD 的诊断预测性能上表现良好，但
+其决策过程的直观解释性存在挑战。这一挑战制约了模
+型在医学诊断中的临床实用性，因此未来有必要应用可
+解释性增强技术以揭示模型决策背后的逻辑和依据，保
+障模型与临床实践的紧密结合。
+参考文献
+［1］丁伟杰。分类算法在心脏病预诊中的研究［D］。西安:
+西安电子科技大学，2019.
+DING W J.Research on classification algorithms in the
+heart disease ［D］。 Xi'an: Xidian
+prediagnosis of
+University,2019.
+［2］DETRANO R,JANOSI A,STEINBRUNN W,et al.
+International application of a new probability algorithm for
+the diagnosis of coronary artery disease［J］。American
+Journal of Cardiology,1989,64( 5): 304-310.
+［3］BLACHNIK M,DUCH W.Prototype rules from SVM［C］。
+Proceedings of Rule Extraction from Support Vector
+Machines.Berlin: Springer,2008.
+融合注意力残差机制的BP 神经网络在冠状动脉疾病诊断中的应用
+
+第39 卷
+电子测量与仪器学报
+·200·
+［4］LUNA J M,EATON E,UNGARL H ，et al.Tree-
+structured boosting: Connections between gradient
+boosted stumps and full decision trees［J］。ArXiv preprint
+arXiv: 1711.06793,2017.
+［5］尹海宁，张文杰。Logistic 回归模型和随机森林模型对
+AMI 患者MACE 风险的预测价值［J］。心管康复医学
+杂志，2022,31( 2): 131-137.
+YIN H N,ZHANG W J.Predictive value of logistic
+regression model and random forest model for MACE risk
+in AMI patients ［J］。Chinese Journal of Cardiovascular
+Rehabilitation Medicine,2022,31( 2): 131-137.
+［6］EL-SHAFIEY M G,HAGAG A,EL-DAHSHAN E A,et
+al.A hybrid GA and PSO optimized approach for heart-
+random forest ［J ］。
+disease prediction based on
+Multimedia Tools and Applications,2022,81 ( 13):
+18155-18179.
+［7］杨敬桑，罗胤。机器学习在心脏病风险预测中的应用
+研究［J］。福建电脑，2024,40( 8): 12-16.
+YANG J S,LUO Y.Application research of machine
+learning in heart disease risk prediction ［J］。Fujian
+Computer,2024,40( 8): 12-16.
+［8］刘铭璇，唐东林，何媛媛，等。CNN 集成机器学习的金
+属缺陷少样本分类方法［J］。电子测量与仪器学报，
+2023,37( 3): 86-94.
+LIU M X,TANG D L,HE Y Y,et al.A CNN-
+integrated machine learning method for metal defect
+small sample ［J］。 Journal of
+classification with
+Electronic Measurement and Instrumentation,2023，
+37( 3): 86-94.
+［9］王健，李孝虔。一种基于特征组合和卷积神经网络的
+心脏病预测新方法［J］。黑龙江大学自然科学学报，
+2019,36( 1): 115-120.
+WANG J,LI X Q.A new method for heart disease
+prediction based on feature combination and convolutional
+neural networks ［J］。 Natural Science Journal of
+Heilongjiang University,2019,36( 1): 115-120.
+［10］李涵，胡少兵，程为彬。CPSO 优化BP 网络的MEMS 陀
+螺随机误差补偿［J］。电子测量与仪器学报，2024，
+38( 11): 228-234.
+LI H,HU SH B,CHENG W B.MEMS gyroscope
+random error compensation for CPSO optimized BP
+network ［J］。Journal of Electronic Measurement and
+Instrumentation,2024,38( 11): 228-234.
+［11］张一宁。数据挖掘技术在医疗诊断中的应用———感知
+机模型诊断心脏病［J］。电子制作，2019( 4): 8-10.
+ZHANG Y N.Application of data mining technology in
+medical diagnosis-diagnosis of heart disease using
+perceptron model ［J］。Electronic Production,2019 ( 4):
+8-10.
+［12］王颖，赵晓静，马素文，等。一站式护理在心脑血管CTA
+造影中的应用效果研究［J］。护理管理杂志，2022,22
+( 8): 613-616.
+WANG Y,ZHAO X J,MA S W,et al.Study on the
+application effect of one-stop nursing in cardio-
+cerebrovascular CTA angiography ［J］。Journal of Nursing
+Administration,2022,22( 8): 613-616.
+［13］肖美娟，杨丽，付宇，等。影响非器质性心脏病患者心电
+图ST 段压低的因素分析［J］。现代医学，2020,48( 6):
+736-740.
+XIAO M J,YANG L,FU Y,et al.Analysis of factors
+influencing ST-segment depression in non-organic heart
+disease patients ［J］。Modern Medicine,2020,48( 6):
+736-740.
+［14］崔春生，曹艳丽，王美琦，等。基于证据理论的心血管病
+预测方法研究［J］。数学的实践与认识，2021,51( 13):
+121-128.
+CUI CH SH,CAO Y L,WANG M Q,et al.Research on
+cardiovascular disease prediction method based on
+evidence theory ［J］。 Mathematics in Practice and
+Theory,2021,51( 13): 121-128.
+［15］钱伟，王亚丰，王晨，等。基于BP 神经网络与H∞滤波
+的锂电池SoH-SoC 联合估计研究［J］。仪器仪表学报，
+2024,45( 6): 307-319.
+QIAN W,WANG Y F,WANG CH,et al.Study on joint
+estimation of SoH and SoC of lithium battery based on BP
+H ∞ filter ［J］。 Journal of
+neural network and
+Instrumentation,2024,45( 6): 307-319.
+［16］TOUVRON H,BOJANOWSKI P,CARON M,et al.
+ResMLP: Feedforward networks for image classification
+with data-efficient training［C］。International Conference
+on Learning Representations,2021.
+［17］HEO B,YUN S,HAN D,et al.Rethinking spatial
+dimensions of vision transformers［C］。IEEE Conference
+on Computer Vision and Pattern Recognition,2021.
+［18］谷瑞，宋翠玲，李元昊。改进Res2Net 和注意力的中药
+饮片识别模型［J］。国外电子测量技术，2024,43( 9):
+130-140.
+GU R,SONG C L,LI Y H.Improved Res2Net and
+attention-based identification model of Chinese herbal
+slices ［J］。Foreign Electronic Measurement Technology，
+2024,43( 9): 130-140.
+［19］李忠兵，袁章雨，梁海波，等。多层非线性局部感受野极
+限学习机方法用于录井气体分析［J］。仪器仪表学报，
+2024,45( 3): 157-169.
+LI ZH B,YUAN ZH Y,LIANG H B,et al.Multi-layer
+nonlinear local receptive field limit learning machine
+
+第9 期
+gas analysis ［J］。 Journal of
+method for logging
+and Measurement,2024,45 ( 3):
+Instrumentation
+157-169.
+［20］蒋美艳，张辉。机器学习算法对心脏病预测效能的研
+究［J］。中国医学物理学杂志，2024,41( 7): 905-909.
+JIANG M Y,ZHANG H.Study on the predictive efficacy
+of machine learning algorithms for heart disease ［J］。
+Chinese Journal of Medical Physics,2024,41 ( 7):
+905-909.
+［21］章珊珊，陈蒙蒙，方振红，等。基于机器学习的心脏病预
+测模型构建与探讨［J］。医院管理论坛，2024,41( 5):
+58-61.
+ZHANG SH SH,CHEN M M,FANG ZH H,et al.
+Construction and discussion of heart disease prediction
+machine learning ［J］。 Hospital
+model based on
+Management Forum,2024,41( 5): 58-61.
+［22］梁靖涵，许亚杰。基于机器学习算法的心脏病预测诊
+断模型研究［J］。现代信息科技，2022,6( 19): 67-70.
+LIANG J H,XU Y J.Research on heart disease
+prediction and diagnosis model based on machine learning
+algorithms ［J］。Modern Information Technology,2022,6
+( 19): 67-70.
+作者简介
+张汇文，2023 年于天津职业技术师范
+大学获得学士学位，现为天津职业技术师范
+大学硕士研究生，主要研究方向为检测技术
+与自动化装置。
+E-mail: 0521231029@ tute.edu.cn
+Zhang Huiwen received her B.Sc.degree
+from Tianjin University of Technology and Education in 2023.
+Now she is M.Sc.candidate at Tianjin University of Technology
+and Education.Her main research interests include detection
+technology and automation equipment.
+杨晓霞( 通信作者) ，2009 年于长春理
+工大学获得学士学位，2011 年于天津大学
+获得硕士学位，2014 年于天津大学获得博
+士学位，现为天津职业技术师范大学副教
+授，主要研究方向为信息传感与处理。
+E-mail: yangxiaoxia0925@ 163.com
+·201·
+Yang Xiaoxia( Corresponding author) received her B.Sc.
+degree from Changchun University of Science and Technology in
+2009,M.Sc.degree from Tianjin University in 2011 and Ph.D.
+degree from Tianjin University in 2014,respectively.Now she is
+an associate professor in Tianjin University of Technology and
+Education.Her main research interests include information
+sensing and processing.
+高娜，2023 年于唐山师范学院获得学
+士学位，现为天津职业技术师范大学硕士研
+究生，主要研究方向为检测技术与自动化
+装置。
+E-mail: 2966043442@ qq.com
+Gao Na received her B.Sc.degree from
+Tangshan Normal College in 2023.Now she is a M.Sc.candidate
+at Tianjin University of Technology and Education.Her main
+research interests include detection technology and automation
+equipment.
+王宁，2016 年于天津工业大学获得学
+士学位，现为天津职业技术师范大学硕士研
+究生，主要研究方向为检测技术与自动化
+装置。
+E-mail: w490277874@ 163.com
+Wang Ning received his B.Sc.degree
+from Tiangong University in 2023,M.Sc.Now he is a M.Sc.
+candidate at Tianjin University of Technology and Education.His
+main research interests include detection technology and
+automation equipment.
+张翠翠，2008 年于山东大学大学获得
+学士学位，2011 年于山东大学获得硕士学
+位，2015 年于日本京都大学获得博士学位，
+现为天津大学副教授，主要研究方向为智能
+信息处理与识别。
+E-mail: cuicui.zhang@ tju.edu.cn
+Zhang Cuicui received her B.Eng.degree and M.Eng.
+degree from Shandong University in 2008 and 2011,respectively.
+She received Ph.D.degree from Kyoto University,Japan in 2015.
+Now she is an associate professor in Tianjin University.Her main
+research interests include intelligent information processing and
+recognition.
+融合注意力残差机制的BP 神经网络在冠状动脉疾病诊断中的应用

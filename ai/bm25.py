@@ -29,6 +29,7 @@ class BM25Document:
     doc_id: str
     title: str
     text: str
+    metadata: dict[str, object] | None = None
 
 
 class BM25Index:
