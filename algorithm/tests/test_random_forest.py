@@ -22,6 +22,11 @@ class RandomForestTests(unittest.TestCase):
         self.assertGreater(len(first.validation.roc_fpr), 2)
         self.assertEqual(len(first.validation.roc_fpr), len(first.validation.roc_tpr))
         self.assertGreater(len(first.validation.calibration_predicted), 1)
+        self.assertEqual(len(first.validation.threshold_metrics), 7)
+        self.assertEqual(len(first.validation.decision_curve_net_benefit), 7)
+        self.assertEqual(len(first.validation.decision_curve_treat_all), 7)
+        self.assertEqual(len(first.validation.decision_curve_treat_none), 7)
+        self.assertGreater(first.validation.calibrated_brier_score, 0)
 
     def test_missing_values_are_handled_inside_pipeline(self):
         raw = self.dataset.frame.astype(object).copy()

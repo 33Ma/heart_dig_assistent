@@ -11,7 +11,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
-from sklearn.calibration import calibration_curve
+from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate
 from sklearn.pipeline import Pipeline
@@ -39,6 +39,14 @@ class RandomForestValidation:
     roc_tpr: tuple[float, ...]
     calibration_predicted: tuple[float, ...]
     calibration_fraction: tuple[float, ...]
+    calibrated_roc_auc: float = float("nan")
+    calibrated_pr_auc: float = float("nan")
+    calibrated_brier_score: float = float("nan")
+    threshold_metrics: tuple[tuple[float, float, float, float, float, float, float], ...] = ()
+    decision_curve_thresholds: tuple[float, ...] = ()
+    decision_curve_net_benefit: tuple[float, ...] = ()
+    decision_curve_treat_all: tuple[float, ...] = ()
+    decision_curve_treat_none: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -107,6 +115,42 @@ def _calibration(y: np.ndarray, probabilities: np.ndarray) -> tuple[float, float
     return float(fit.intercept_[0]), float(fit.coef_[0, 0])
 
 
+def _threshold_metrics(y: np.ndarray, probabilities: np.ndarray, thresholds: tuple[float, ...]) -> tuple[tuple[float, float, float, float, float, float, float], ...]:
+    """Return threshold, accuracy, sensitivity, specificity, PPV, NPV and F1."""
+    rows = []
+    for threshold in thresholds:
+        predicted = probabilities >= threshold
+        tp = int(np.sum(predicted & (y == 1)))
+        tn = int(np.sum(~predicted & (y == 0)))
+        fp = int(np.sum(predicted & (y == 0)))
+        fn = int(np.sum(~predicted & (y == 1)))
+        sensitivity = tp / (tp + fn) if tp + fn else float("nan")
+        specificity = tn / (tn + fp) if tn + fp else float("nan")
+        ppv = tp / (tp + fp) if tp + fp else float("nan")
+        npv = tn / (tn + fn) if tn + fn else float("nan")
+        f1 = 2 * ppv * sensitivity / (ppv + sensitivity) if ppv + sensitivity else float("nan")
+        rows.append((float(threshold), float(np.mean(predicted == y)), float(sensitivity), float(specificity), float(ppv), float(npv), float(f1)))
+    return tuple(rows)
+
+
+def _decision_curve(y: np.ndarray, probabilities: np.ndarray, thresholds: tuple[float, ...]) -> tuple[float, ...]:
+    """Calculate net benefit for a treat-if-risk-exceeds-threshold policy."""
+    prevalence = float(np.mean(y))
+    benefits = []
+    for threshold in thresholds:
+        predicted = probabilities >= threshold
+        tp = float(np.sum(predicted & (y == 1))) / len(y)
+        fp = float(np.sum(predicted & (y == 0))) / len(y)
+        odds = threshold / (1.0 - threshold)
+        benefits.append(tp - fp * odds)
+    return tuple(float(value) for value in benefits)
+
+
+def _treat_all_benefit(y: np.ndarray, thresholds: tuple[float, ...]) -> tuple[float, ...]:
+    prevalence = float(np.mean(y))
+    return tuple(float(prevalence - (1.0 - prevalence) * threshold / (1.0 - threshold)) for threshold in thresholds)
+
+
 def run_random_forest(
     dataset: Dataset,
     predictors: Sequence[str] | None = None,
@@ -139,6 +183,17 @@ def run_random_forest(
         return_train_score=False,
     )
     probabilities = cross_val_predict(pipe, x, y, cv=splitter, method="predict_proba")[:, 1]
+    calibrated_probabilities = cross_val_predict(
+        CalibratedClassifierCV(
+            estimator=_pipeline(names, n_estimators=n_estimators, min_samples_leaf=min_samples_leaf, seed=seed),
+            method="sigmoid",
+            cv=3,
+        ),
+        x,
+        y,
+        cv=splitter,
+        method="predict_proba",
+    )[:, 1]
     pipe.fit(x, y)
     names_out = pipe.named_steps["preprocess"].get_feature_names_out()
     importances = pipe.named_steps["model"].feature_importances_
@@ -148,6 +203,7 @@ def run_random_forest(
     calibration_fraction, calibration_predicted = calibration_curve(
         y, probabilities, n_bins=8, strategy="quantile"
     )
+    policy_thresholds = (0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
     validation = RandomForestValidation(
         roc_auc=float(roc_auc_score(y, probabilities)),
         pr_auc=float(average_precision_score(y, probabilities)),
@@ -161,6 +217,14 @@ def run_random_forest(
         roc_tpr=tuple(float(value) for value in roc_tpr),
         calibration_predicted=tuple(float(value) for value in calibration_predicted),
         calibration_fraction=tuple(float(value) for value in calibration_fraction),
+        calibrated_roc_auc=float(roc_auc_score(y, calibrated_probabilities)),
+        calibrated_pr_auc=float(average_precision_score(y, calibrated_probabilities)),
+        calibrated_brier_score=float(brier_score_loss(y, calibrated_probabilities)),
+        threshold_metrics=_threshold_metrics(y, calibrated_probabilities, policy_thresholds),
+        decision_curve_thresholds=policy_thresholds,
+        decision_curve_net_benefit=_decision_curve(y, calibrated_probabilities, policy_thresholds),
+        decision_curve_treat_all=_treat_all_benefit(y, policy_thresholds),
+        decision_curve_treat_none=tuple(0.0 for _ in policy_thresholds),
     )
     return RandomForestResult(
         outcome="target_positive", predictors=names, n=len(y), positive=int(y.sum()), negative=int((y == 0).sum()),

@@ -42,6 +42,15 @@ from algorithm.random_forest import (
     RandomForestValidation,
     run_random_forest,
 )
+from algorithm.neural_network import (
+    ALGORITHM_VERSION as NEURAL_NETWORK_ALGORITHM_VERSION,
+    CalibrationMetrics,
+    ClassificationMetrics,
+    NeuralNetworkError,
+    NeuralNetworkResult,
+    NeuralNetworkValidation,
+    run_neural_network,
+)
 from algorithm.workbench import (
     ALGORITHM_VERSION,
     build_workbench,
@@ -82,4 +91,11 @@ __all__ = [
     "RandomForestValidation",
     "RANDOM_FOREST_ALGORITHM_VERSION",
     "run_random_forest",
+    "NeuralNetworkError",
+    "ClassificationMetrics",
+    "CalibrationMetrics",
+    "NeuralNetworkResult",
+    "NeuralNetworkValidation",
+    "NEURAL_NETWORK_ALGORITHM_VERSION",
+    "run_neural_network",
 ]
