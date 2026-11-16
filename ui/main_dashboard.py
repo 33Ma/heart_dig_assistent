@@ -38,11 +38,12 @@ from ui.charts import (
 from ui.dashboard_data import DashboardData
 from ui.ai_report_dialog import AIReportDialog, build_cardio_report_record
 from ui.icons import BrandMark, IconWidget, draw_icon, make_icon_pixmap
-from ui.sample_analysis import SAMPLE_STYLESHEET, SampleAnalysisPage
-from ui.theme import COLORS, DEFAULT_FONT, NAV_SECTION, rgba
+from ui.sample_analysis import sample_stylesheet, SampleAnalysisPage
+from ui.theme import COLORS, DEFAULT_FONT, rgba, theme_manager
 from algorithm.dataset import load_dataset
 from algorithm.regression import run_logistic_regression
 from algorithm.random_forest import run_random_forest
+from algorithm.neural_network import run_neural_network
 
 
 class _ForestSignals(QObject):
@@ -63,6 +64,31 @@ class _ForestTask(QRunnable):
     def run(self) -> None:
         try:
             self.signals.finished.emit(run_random_forest(self.dataset))
+        except Exception as error:  # noqa: BLE001 - reported on the page
+            self.signals.failed.emit(str(error) or type(error).__name__)
+
+
+class _NeuralSignals(QObject):
+    finished = Signal(object)
+    failed = Signal(str)
+
+
+class _NeuralTask(QRunnable):
+    """Run the MLP analysis off the Qt UI thread."""
+
+    def __init__(self, dataset, signals: _NeuralSignals, hidden_layer_sizes: tuple[int, ...] = (32, 16)) -> None:
+        super().__init__()
+        self.dataset = dataset
+        self.signals = signals
+        self.hidden_layer_sizes = hidden_layer_sizes
+        self.setAutoDelete(True)
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            self.signals.finished.emit(
+                run_neural_network(self.dataset, hidden_layer_sizes=self.hidden_layer_sizes)
+            )
         except Exception as error:  # noqa: BLE001 - reported on the page
             self.signals.failed.emit(str(error) or type(error).__name__)
 
@@ -226,7 +252,7 @@ class NavRail(QFrame):
         layout.addLayout(brand_row)
 
         layout.addSpacing(28)
-        layout.addWidget(_label("工作空间", size=9, color=NAV_SECTION, spacing=1.2))
+        layout.addWidget(_label("工作空间", size=9, color=COLORS["nav_section"], spacing=1.2))
         layout.addSpacing(7)
 
         self.buttons: dict[str, NavButton] = {}
@@ -239,7 +265,7 @@ class NavRail(QFrame):
         self.buttons["工作台"].setChecked(True)
 
         layout.addSpacing(21)
-        layout.addWidget(_label("系统", size=9, color=NAV_SECTION, spacing=1.2))
+        layout.addWidget(_label("系统", size=9, color=COLORS["nav_section"], spacing=1.2))
         layout.addSpacing(7)
         for title, kind in NAV_SYSTEM:
             button = NavButton(title, kind)
@@ -278,7 +304,7 @@ class NavRail(QFrame):
         doctor_text = QVBoxLayout()
         doctor_text.setSpacing(1)
         self.doctor_label = _label(data.doctor, size=12, color=COLORS["surface"], bold=True)
-        self.role_label = _label(data.doctor_role, size=9, color=NAV_SECTION)
+        self.role_label = _label(data.doctor_role, size=9, color=COLORS["nav_section"])
         doctor_text.addWidget(self.doctor_label)
         doctor_text.addWidget(self.role_label)
         account.addLayout(doctor_text)
@@ -391,6 +417,13 @@ class TopBar(QFrame):
         self.bell.clicked.connect(lambda: _coming_soon(self, "通知中心"))
         layout.addWidget(self.bell)
 
+        self.theme_button = QPushButton()
+        self.theme_button.setObjectName("dbIcon")
+        self.theme_button.setFixedSize(36, 36)
+        self.theme_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.theme_button.clicked.connect(theme_manager.toggle)
+        layout.addWidget(self.theme_button)
+
         self.avatar = QPushButton()
         self.avatar.setObjectName("dbAvatar")
         self.avatar.setFixedSize(36, 36)
@@ -401,7 +434,15 @@ class TopBar(QFrame):
         self.avatar.clicked.connect(self._show_account_menu)
         layout.addWidget(self.avatar)
 
+        theme_manager.changed.connect(self._update_theme_button)
+        self._update_theme_button(theme_manager.mode)
         self.set_data(data)
+
+    def _update_theme_button(self, mode: str) -> None:
+        icon = "sun" if mode == "dark" else "moon"
+        self.theme_button.setIcon(make_icon_pixmap(icon, 16, COLORS["text_secondary"]))
+        self.theme_button.setIconSize(QSize(16, 16))
+        self.theme_button.setToolTip("切换到浅色主题" if mode == "dark" else "切换到深色主题")
 
     def set_data(self, data: DashboardData) -> None:
         """Refresh the page header, dataset chip and title."""
@@ -455,7 +496,9 @@ class KpiCard(QFrame):
         head.addStretch(1)
         chip = QFrame()
         chip.setFixedSize(28, 28)
-        chip.setStyleSheet(f"background: {metric.icon_background}; border-radius: 8px;")
+        chip.setStyleSheet(
+            f"background: {rgba(metric.icon_color, 0.12)}; border-radius: 8px;"
+        )
         chip_layout = QHBoxLayout(chip)
         chip_layout.setContentsMargins(0, 0, 0, 0)
         chip_layout.addWidget(_icon(metric.icon, 15, metric.icon_color), 0, Qt.AlignmentFlag.AlignCenter)
@@ -815,10 +858,14 @@ class MainDashboard(QWidget):
         self.data = data or DashboardData()
         self._account = ""
         self._sample_regression_result = None
+        self._sample_forest_result = None
+        self._sample_neural_result = None
+        self._sample_page = None
+        self._sample_dataset = None
 
         self.setObjectName("dbRoot")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet(STYLESHEET)
+        self.setStyleSheet(stylesheet())
 
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -1129,8 +1176,17 @@ class MainDashboard(QWidget):
         self.topbar.set_data(self.data)
         self.nav.set_active("工作台")
 
-    def _show_sample_analysis(self) -> None:
+    def _show_sample_analysis(self, *, cached: bool = False) -> None:
         """Render the Pixso sample-analysis shell without changing the workbench data."""
+
+        if cached and self._sample_regression_result is not None and self._sample_dataset is not None:
+            self._render_sample_analysis(
+                self._sample_dataset,
+                self._sample_regression_result,
+                self._sample_forest_result,
+                self._sample_neural_result,
+            )
+            return
 
         try:
             dataset = load_dataset()
@@ -1142,35 +1198,88 @@ class MainDashboard(QWidget):
             self.topbar.subtitle_label.setText("")
             self._replace_content(self._placeholder_content(icon="file-text", title="回归分析暂不可用", detail=str(exc), accent=COLORS["danger"]))
             return
+        self._sample_regression_result = result
+        self._sample_forest_result = None
+        self._sample_neural_result = None
+        self._sample_dataset = dataset
+        self._render_sample_analysis(dataset, result, None, None)
+
+    def _render_sample_analysis(
+        self,
+        dataset,
+        result,
+        forest_result,
+        neural_result,
+    ) -> None:
         self.nav.set_active("样本分析")
         self.topbar.set_compact(True)
         self.topbar.title_label.setText("回归分析")
         self.topbar.subtitle_label.setText("")
+        page = SampleAnalysisPage(result, forest_result, neural_result)
+        self._sample_page = page
         self._sample_regression_result = result
-        page = SampleAnalysisPage(result)
+        self._sample_forest_result = forest_result
+        self._sample_neural_result = neural_result
+        self._sample_dataset = dataset
         page.regression_changed.connect(self._set_sample_regression_result)
-        page.setStyleSheet(SAMPLE_STYLESHEET)
+        page.neural_structure_requested.connect(self._rerun_neural_network)
+        page.setStyleSheet(sample_stylesheet())
         self._replace_content(page)
-        signals = _ForestSignals(page)
-        signals.finished.connect(page.set_forest_result)
-        signals.failed.connect(lambda error: page.set_forest_result(None, error))
-        task = _ForestTask(dataset, signals)
+
+        if forest_result is None:
+            signals = _ForestSignals(self)
+            signals.finished.connect(self._set_sample_forest_result)
+            signals.finished.connect(page.set_forest_result)
+            signals.failed.connect(lambda error: page.set_forest_result(None, error))
+            task = _ForestTask(dataset, signals)
+            QThreadPool.globalInstance().start(task)
+        if neural_result is None:
+            self._start_neural_task(dataset, page, (32, 16))
+
+    def _start_neural_task(
+        self,
+        dataset,
+        page: SampleAnalysisPage,
+        hidden_layer_sizes: tuple[int, ...],
+    ) -> None:
+        signals = _NeuralSignals(self)
+        signals.finished.connect(self._set_sample_neural_result)
+        signals.finished.connect(page.set_neural_result)
+        signals.failed.connect(lambda error: page.set_neural_result(None, error))
+        task = _NeuralTask(dataset, signals, hidden_layer_sizes)
         QThreadPool.globalInstance().start(task)
+
+    def _rerun_neural_network(self, hidden_layer_sizes: tuple[int, ...]) -> None:
+        if self._sample_page is None or self._sample_dataset is None:
+            return
+        self._sample_page.set_neural_loading(hidden_layer_sizes)
+        self._start_neural_task(self._sample_dataset, self._sample_page, hidden_layer_sizes)
 
     def _set_sample_regression_result(self, result) -> None:
         self._sample_regression_result = result
 
+    def _set_sample_forest_result(self, result) -> None:
+        self._sample_forest_result = result
+
+    def _set_sample_neural_result(self, result) -> None:
+        self._sample_neural_result = result
+
     def _open_ai_report(self) -> None:
         """Open the provider dialog with the current dashboard results."""
 
-        record = build_cardio_report_record(self.data, self._sample_regression_result)
+        record = build_cardio_report_record(
+            self.data,
+            self._sample_regression_result,
+            self._sample_forest_result,
+        )
         AIReportDialog(record, self).exec()
 
     def _not_ready(self, feature: str) -> None:
         _coming_soon(self, feature)
 
 
-STYLESHEET = f"""
+def stylesheet() -> str:
+    return f"""
 QWidget#dbRoot, QWidget#dbColumn, QWidget#dbContent {{
     background: {COLORS["page"]};
 }}
@@ -1212,7 +1321,7 @@ QPushButton#dbAvatar {{
     border-radius: 18px;
 }}
 QPushButton#dbAvatar:hover {{
-    background: #1E60EE;
+    background: {COLORS["primary_hover"]};
 }}
 QPushButton#dbGhost {{
     background: {COLORS["surface"]};
@@ -1224,7 +1333,7 @@ QPushButton#dbGhost {{
 }}
 QPushButton#dbGhost:hover {{
     background: {COLORS["input"]};
-    border-color: #BFD0E4;
+    border-color: {COLORS["border_strong"]};
 }}
 QPushButton#dbPrimary {{
     background: {COLORS["primary"]};
@@ -1236,10 +1345,10 @@ QPushButton#dbPrimary {{
     padding: 0 12px;
 }}
 QPushButton#dbPrimary:hover {{
-    background: #1E60EE;
+    background: {COLORS["primary_hover"]};
 }}
 QPushButton#dbPrimary:pressed {{
-    background: #164EC8;
+    background: {COLORS["primary_pressed"]};
 }}
 QPushButton#dbSubtle {{
     background: {COLORS["input"]};
@@ -1252,7 +1361,7 @@ QPushButton#dbSubtle {{
 }}
 QPushButton#dbSubtle:hover {{
     background: {COLORS["primary_light"]};
-    border-color: #D8E4FF;
+    border-color: {COLORS["info_border"]};
 }}
 QPushButton#dbLink {{
     background: transparent;
@@ -1263,7 +1372,7 @@ QPushButton#dbLink {{
     padding: 0;
 }}
 QPushButton#dbLink:hover {{
-    color: #1658D8;
+    color: {COLORS["primary_hover"]};
 }}
 QProgressBar#dbBusy {{
     background: {COLORS["grid"]};
@@ -1275,7 +1384,7 @@ QProgressBar#dbBusy::chunk {{
     border-radius: 2px;
 }}
 QFrame#dbToast {{
-    background: rgba(11, 31, 58, 235);
+    background: {rgba(COLORS["toast"], 0.94)};
     border-radius: 10px;
 }}
 QFrame#dbRiskPanel {{
@@ -1320,12 +1429,12 @@ QScrollBar:vertical {{
     margin: 4px 2px 4px 2px;
 }}
 QScrollBar::handle:vertical {{
-    background: #D3DFEE;
+    background: {COLORS["border_strong"]};
     border-radius: 4px;
     min-height: 40px;
 }}
 QScrollBar::handle:vertical:hover {{
-    background: #BCCDE2;
+    background: {COLORS["text_muted"]};
 }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
     height: 0;
@@ -1339,7 +1448,7 @@ QScrollBar:horizontal {{
     margin: 2px 4px 2px 4px;
 }}
 QScrollBar::handle:horizontal {{
-    background: #D3DFEE;
+    background: {COLORS["border_strong"]};
     border-radius: 4px;
     min-width: 40px;
 }}
@@ -1381,3 +1490,7 @@ QMessageBox QPushButton {{
     padding: 0 12px;
 }}
 """
+
+
+# Kept for callers that imported the original module-level stylesheet constant.
+STYLESHEET = stylesheet()

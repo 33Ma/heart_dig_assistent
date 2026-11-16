@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QTextBrowser
 
+from ui.theme import COLORS, DEFAULT_FONT
+
 
 class MarkdownViewer(QTextBrowser):
     """Render Markdown with Qt's built in rich text support.
@@ -17,16 +19,22 @@ class MarkdownViewer(QTextBrowser):
         self._markdown_source = ""
         self.setOpenExternalLinks(False)
         self.setOpenLinks(False)
-        self.document().setDefaultStyleSheet(
-            "body { color: #26384C; font-family: 'Microsoft YaHei'; font-size: 11pt; line-height: 1.55; }"
-            "h1 { color: #17283B; font-size: 22pt; margin-bottom: 12px; }"
-            "h2 { color: #1F6FE5; font-size: 16pt; margin-top: 18px; }"
-            "h3 { color: #53677B; font-size: 13pt; margin-top: 14px; }"
-            "blockquote { color: #53677B; background: #F2F7FC; border-left: 4px solid #66B7B3; padding: 8px 12px; }"
-            "code { color: #8D3D69; background: #F5F1F7; }"
-            "table { border-collapse: collapse; } th, td { border: 1px solid #DCE6EF; padding: 6px 9px; } th { background: #EDF3F8; }"
-        )
+        self.apply_theme()
         self.setPlaceholderText("生成后的 Markdown 报告会显示在这里")
+
+    def apply_theme(self) -> None:
+        self.setStyleSheet(
+            f"QTextBrowser {{ background: {COLORS['surface']}; color: {COLORS['text']}; border: 1px solid {COLORS['border']}; }}"
+        )
+        self.document().setDefaultStyleSheet(
+            f"body {{ color: {COLORS['text']}; font-family: '{DEFAULT_FONT}'; font-size: 11pt; line-height: 1.55; }}"
+            f"h1 {{ color: {COLORS['text']}; font-size: 22pt; margin-bottom: 12px; }}"
+            f"h2 {{ color: {COLORS['primary']}; font-size: 16pt; margin-top: 18px; }}"
+            f"h3 {{ color: {COLORS['text_secondary']}; font-size: 13pt; margin-top: 14px; }}"
+            f"blockquote {{ color: {COLORS['text_secondary']}; background: {COLORS['surface_alt']}; border-left: 4px solid {COLORS['teal']}; padding: 8px 12px; }}"
+            f"code {{ color: {COLORS['purple']}; background: {COLORS['surface_alt']}; }}"
+            f"table {{ border-collapse: collapse; }} th, td {{ border: 1px solid {COLORS['border']}; padding: 6px 9px; }} th {{ background: {COLORS['surface_alt']}; }}"
+        )
 
     def set_markdown(self, markdown: str):
         self._markdown_source = markdown or ""

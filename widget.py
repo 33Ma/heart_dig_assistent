@@ -5,6 +5,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
 from ui.login_window import DEFAULT_FONT, Widget
+from ui.theme import apply_qt_palette, theme_manager
 
 
 def main() -> int:
@@ -13,6 +14,8 @@ def main() -> int:
     app.setOrganizationName("CardioScope")
     app.setStyle("Fusion")
     app.setFont(QFont(DEFAULT_FONT, 10))
+    theme_manager.load()
+    apply_qt_palette(app)
 
     window = Widget()
     window.show()

@@ -32,7 +32,24 @@ from ai.report_generator import AIReportCancelled, AIReportError, AIReportServic
 from ai.security_settings import load_security_settings, save_security_settings
 from ui.dashboard_data import DashboardData
 from ui.markdown_viewer import MarkdownViewer
+from ui.theme import COLORS, DEFAULT_FONT
 from algorithm.regression import RegressionResult
+from algorithm.random_forest import RandomForestResult
+
+
+def _theme_color(color: str) -> str:
+    aliases = {
+        "#17283B": "text",
+        "#26384C": "text",
+        "#7C8B9D": "text_muted",
+        "#53677B": "text_secondary",
+        "#0D9B92": "teal",
+        "#C24545": "danger",
+        "#60758A": "text_secondary",
+        "#2B6EDE": "primary",
+        "#0B8B64": "success",
+    }
+    return COLORS.get(aliases.get(color, ""), color)
 
 
 @dataclass(frozen=True)
@@ -64,6 +81,7 @@ class CardioReportRecord:
 def build_cardio_report_record(
     data: DashboardData,
     regression: RegressionResult | None = None,
+    random_forest: RandomForestResult | None = None,
 ) -> CardioReportRecord:
     """Adapt the current workbench result to the reference AI report contract."""
 
@@ -134,6 +152,65 @@ def build_cardio_report_record(
                 "校准截距": round(regression.validation.calibration_intercept, 6),
                 "校准斜率": round(regression.validation.calibration_slope, 6),
             },
+        }
+    if random_forest is not None:
+        validation = random_forest.validation
+        parameters["随机森林分析"] = {
+            "模型": "Random Forest 二分类模型",
+            "自变量": list(random_forest.predictors),
+            "样本数": random_forest.n,
+            "阳性数": random_forest.positive,
+            "阴性数": random_forest.negative,
+            "模型参数": {
+                "树数量": random_forest.n_estimators,
+                "最小叶节点样本数": random_forest.min_samples_leaf,
+                "交叉验证折数": random_forest.folds,
+                "随机种子": random_forest.seed,
+                "数据指纹": random_forest.dataset_fingerprint,
+            },
+            "验证指标": {
+                "ROC-AUC": round(validation.roc_auc, 6),
+                "PR-AUC": round(validation.pr_auc, 6),
+                "Brier score": round(validation.brier_score, 6),
+                "校准后 ROC-AUC": round(validation.calibrated_roc_auc, 6),
+                "校准后 PR-AUC": round(validation.calibrated_pr_auc, 6),
+                "校准后 Brier score": round(validation.calibrated_brier_score, 6),
+                "校准截距": round(validation.calibration_intercept, 6),
+                "校准斜率": round(validation.calibration_slope, 6),
+                "各折 ROC-AUC": [round(value, 6) for value in validation.cv_roc_auc],
+                "各折 PR-AUC": [round(value, 6) for value in validation.cv_pr_auc],
+                "各折 Brier score": [round(value, 6) for value in validation.cv_brier_score],
+            },
+            "特征重要性": [
+                {"特征": name, "重要性": round(value, 6)}
+                for name, value in random_forest.feature_importance
+            ],
+            "阈值评估": [
+                {
+                    "阈值": round(row[0], 3),
+                    "Accuracy": round(row[1], 6),
+                    "Sensitivity": round(row[2], 6),
+                    "Specificity": round(row[3], 6),
+                    "PPV": round(row[4], 6),
+                    "NPV": round(row[5], 6),
+                    "F1": round(row[6], 6),
+                }
+                for row in validation.threshold_metrics
+            ],
+            "决策曲线净获益": [
+                {
+                    "阈值": round(threshold, 3),
+                    "模型": round(model_value, 6),
+                    "全部干预": round(treat_all, 6),
+                    "全部不干预": round(treat_none, 6),
+                }
+                for threshold, model_value, treat_all, treat_none in zip(
+                    validation.decision_curve_thresholds,
+                    validation.decision_curve_net_benefit,
+                    validation.decision_curve_treat_all,
+                    validation.decision_curve_treat_none,
+                )
+            ],
         }
     return CardioReportRecord(
         title="Cleveland 心脏风险分析报告",
@@ -218,11 +295,7 @@ class AIReportDialog(QDialog):
         self.setMinimumSize(820, 640)
         self.resize(920, 720)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
-        self.setStyleSheet(
-            "QDialog { background: #EDF3F8; }"
-            "QLineEdit, QComboBox, QTextEdit { background: white; color: #26384C; border: 1px solid #DCE6EF; border-radius: 9px; padding: 7px 9px; font-family: 'Microsoft YaHei'; font-size: 10px; }"
-            "QTextEdit { padding: 9px; }"
-        )
+        self.setStyleSheet(self._dialog_stylesheet())
         root = QVBoxLayout(self)
         root.setContentsMargins(24, 20, 24, 20)
         root.setSpacing(12)
@@ -290,8 +363,8 @@ class AIReportDialog(QDialog):
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setFixedWidth(190)
         self.progress_bar.setStyleSheet(
-            "QProgressBar { background: #DDE7F0; border: none; border-radius: 4px; height: 8px; }"
-            "QProgressBar::chunk { background: #1F6FE5; border-radius: 4px; }"
+            f"QProgressBar {{ background: {COLORS['grid']}; border: none; border-radius: 4px; height: 8px; }}"
+            f"QProgressBar::chunk {{ background: {COLORS['primary']}; border-radius: 4px; }}"
         )
         progress_row.addWidget(self.progress_bar)
         root.addLayout(progress_row)
@@ -302,9 +375,9 @@ class AIReportDialog(QDialog):
         self.cancel_button.setFixedSize(84, 36)
         self.cancel_button.setCursor(Qt.PointingHandCursor)
         self.cancel_button.setStyleSheet(
-            "QPushButton { background: white; color: #66798D; border: 1px solid #D4E0EA; border-radius: 9px; font-family: 'Microsoft YaHei'; font-size: 10px; }"
-            "QPushButton:hover { background: #F8FAFD; }"
-            "QPushButton:disabled { color: #A9B6C3; background: #F7F9FB; }"
+            f"QPushButton {{ background: {COLORS['surface']}; color: {COLORS['text_secondary']}; border: 1px solid {COLORS['border']}; border-radius: 9px; font-family: '{DEFAULT_FONT}'; font-size: 10px; }}"
+            f"QPushButton:hover {{ background: {COLORS['surface_hover']}; }}"
+            f"QPushButton:disabled {{ color: {COLORS['disabled_text']}; background: {COLORS['disabled_surface']}; }}"
         )
         self.cancel_button.clicked.connect(self.cancel_generation)
         self.cancel_button.hide()
@@ -318,9 +391,9 @@ class AIReportDialog(QDialog):
         self.clear_button.setFixedSize(84, 36)
         self.clear_button.setCursor(Qt.PointingHandCursor)
         self.clear_button.setStyleSheet(
-            "QPushButton { background: white; color: #66798D; border: 1px solid #D4E0EA; border-radius: 9px; font-family: 'Microsoft YaHei'; font-size: 10px; }"
-            "QPushButton:hover { background: #F8FAFD; }"
-            "QPushButton:disabled { color: #A9B6C3; background: #F7F9FB; }"
+            f"QPushButton {{ background: {COLORS['surface']}; color: {COLORS['text_secondary']}; border: 1px solid {COLORS['border']}; border-radius: 9px; font-family: '{DEFAULT_FONT}'; font-size: 10px; }}"
+            f"QPushButton:hover {{ background: {COLORS['surface_hover']}; }}"
+            f"QPushButton:disabled {{ color: {COLORS['disabled_text']}; background: {COLORS['disabled_surface']}; }}"
         )
         self.clear_button.clicked.connect(self.clear_result)
         actions.addWidget(self.clear_button)
@@ -347,7 +420,11 @@ class AIReportDialog(QDialog):
         self.generate_button = QPushButton("生成分析报告")
         self.generate_button.setFixedSize(126, 36)
         self.generate_button.setCursor(Qt.PointingHandCursor)
-        self.generate_button.setStyleSheet("QPushButton { color: white; background: #1F6FE5; border: none; border-radius: 9px; font-family: 'Microsoft YaHei'; font-size: 10px; font-weight: 700; } QPushButton:disabled { background: #AFC8E8; }")
+        self.generate_button.setStyleSheet(
+            f"QPushButton {{ color: {COLORS['surface']}; background: {COLORS['primary']}; border: none; border-radius: 9px; font-family: '{DEFAULT_FONT}'; font-size: 10px; font-weight: 700; }} "
+            f"QPushButton:hover {{ background: {COLORS['primary_hover']}; }} "
+            f"QPushButton:disabled {{ background: {COLORS['primary_disabled']}; }}"
+        )
         self.generate_button.clicked.connect(self.generate_report)
         actions.addWidget(self.generate_button)
         root.addLayout(actions)
@@ -355,9 +432,55 @@ class AIReportDialog(QDialog):
         self._save_security_settings()
 
     @staticmethod
+    def _dialog_stylesheet() -> str:
+        return f"""
+        QDialog {{ background: {COLORS["page"]}; color: {COLORS["text"]}; }}
+        QLineEdit, QComboBox, QTextEdit {{
+            background: {COLORS["surface"]};
+            color: {COLORS["text"]};
+            border: 1px solid {COLORS["border"]};
+            border-radius: 9px;
+            padding: 7px 9px;
+            font-family: "{DEFAULT_FONT}";
+            font-size: 10px;
+        }}
+        QLineEdit:focus, QComboBox:focus, QTextEdit:focus {{
+            border-color: {COLORS["primary"]};
+        }}
+        QTextEdit {{ padding: 9px; }}
+        QComboBox QAbstractItemView {{
+            background: {COLORS["surface"]};
+            color: {COLORS["text"]};
+            selection-background-color: {COLORS["primary_light"]};
+            selection-color: {COLORS["primary"]};
+        }}
+        QSlider::groove:horizontal {{
+            background: {COLORS["grid"]};
+            height: 6px;
+            border-radius: 3px;
+        }}
+        QSlider::handle:horizontal {{
+            background: {COLORS["primary"]};
+            width: 14px;
+            margin: -4px 0;
+            border-radius: 7px;
+        }}
+        QProgressBar {{
+            background: {COLORS["grid"]};
+            border: none;
+            border-radius: 4px;
+            height: 8px;
+        }}
+        QProgressBar::chunk {{ background: {COLORS["primary"]}; border-radius: 4px; }}
+        """
+
+    @staticmethod
     def _label(text, size, color, weight=400):
         label = QLabel(text)
-        label.setStyleSheet(f"color: {color}; background: transparent; font-family: 'Microsoft YaHei'; font-size: {size}px; font-weight: {weight};")
+        label.setStyleSheet(
+            f"color: {_theme_color(color)}; background: transparent; "
+            f"font-family: '{DEFAULT_FONT}'; font-size: {size}px; font-weight: {weight};"
+        )
         return label
 
     def _provider_changed(self, name):
@@ -612,8 +735,8 @@ class AIReportDialog(QDialog):
     def _set_status(self, text: str, color: str):
         self.status_label.setText(text)
         self.status_label.setStyleSheet(
-            f"color: {color}; background: transparent;"
-            " font-family: 'Microsoft YaHei'; font-size: 9px;"
+            f"color: {_theme_color(color)}; background: transparent;"
+            f" font-family: '{DEFAULT_FONT}'; font-size: 9px;"
         )
 
     def is_running(self) -> bool:

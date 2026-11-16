@@ -364,7 +364,7 @@ class SegmentedRing(QWidget):
 
         # pale centre
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#FFF5F6"))
+        painter.setBrush(QColor(COLORS["surface_alt"]))
         painter.drawEllipse(circle.adjusted(thickness, thickness, -thickness, -thickness))
 
         # track

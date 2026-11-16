@@ -7,7 +7,7 @@ DataFrame and the algorithms never import Qt.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from algorithm import WorkbenchPayload, build_workbench_from_csv
@@ -34,6 +34,7 @@ class KpiMetric:
     badge_color: str
     sparkline: tuple[float, ...]
     sparkline_color: str
+    key: str = ""
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,7 @@ class RiskFactor:
     summary: str
     percent: float
     color: str
+    key: str = ""
 
 
 @dataclass(frozen=True)
@@ -60,6 +62,7 @@ class ComparisonRow:
     delta: str
     delta_color: str
     emphasize: bool = False
+    key: str = ""
 
 
 @dataclass(frozen=True)
@@ -80,6 +83,7 @@ class RiskSlice:
     label: str
     percent: float
     color: str
+    key: str = ""
 
 
 @dataclass(frozen=True)
@@ -115,55 +119,55 @@ class DashboardData:
 _KPI_PRESENTATION = {
     "age": {
         "icon": "heart-pulse",
-        "color": COLORS["primary"],
-        "background": COLORS["primary_light"],
-        "badge_color": COLORS["danger"],
-        "sparkline": COLORS["primary"],
+        "color": "primary",
+        "background": "primary_light",
+        "badge_color": "danger",
+        "sparkline": "primary",
     },
     "positive_rate": {
         "icon": "pulse",
-        "color": COLORS["cyan"],
-        "background": rgba(COLORS["cyan"], 0.08),
-        "badge_color": COLORS["success"],
-        "sparkline": COLORS["cyan"],
+        "color": "cyan",
+        "background": "cyan",
+        "badge_color": "success",
+        "sparkline": "cyan",
     },
     "trestbps": {
         "icon": "droplets",
-        "color": COLORS["success"],
-        "background": rgba(COLORS["success"], 0.08),
-        "badge_color": COLORS["success"],
-        "sparkline": COLORS["success"],
+        "color": "success",
+        "background": "success",
+        "badge_color": "success",
+        "sparkline": "success",
     },
     "thalach": {
         "icon": "gauge",
-        "color": COLORS["orange"],
-        "background": rgba(COLORS["orange"], 0.08),
-        "badge_color": COLORS["success"],
-        "sparkline": COLORS["orange"],
+        "color": "orange",
+        "background": "orange",
+        "badge_color": "success",
+        "sparkline": "orange",
     },
 }
 
 _RISK_FACTOR_COLORS = {
-    "exang": COLORS["orange"],
-    "fbs": COLORS["cyan"],
-    "oldpeak": COLORS["danger"],
-    "ca": COLORS["purple"],
+    "exang": "orange",
+    "fbs": "cyan",
+    "oldpeak": "danger",
+    "ca": "purple",
 }
 
 _COMPARISON_COLORS = {
-    "age": COLORS["success"],
-    "trestbps": COLORS["orange"],
-    "chol": COLORS["success"],
-    "thalach": COLORS["cyan"],
+    "age": "success",
+    "trestbps": "orange",
+    "chol": "success",
+    "thalach": "cyan",
 }
 
 #: Units shown inside the comparison table (the design only repeats these two).
 _COMPARISON_UNITS = {"age": "岁", "thalach": "bpm"}
 
 _SLICE_COLORS = {
-    "grade0": COLORS["success"],
-    "grade1": COLORS["orange"],
-    "grade2_4": COLORS["danger"],
+    "grade0": "success",
+    "grade1": "orange",
+    "grade2_4": "danger",
 }
 
 
@@ -218,7 +222,8 @@ def to_dashboard(
                 label=factor.label,
                 summary=factor.summary,
                 percent=factor.percent,
-                color=_RISK_FACTOR_COLORS.get(factor.key, COLORS["primary"]),
+                color=COLORS[_RISK_FACTOR_COLORS.get(factor.key, "primary")],
+                key=factor.key,
             )
             for factor in payload.risk_factors
         ),
@@ -241,7 +246,8 @@ def to_dashboard(
             RiskSlice(
                 label=f"{item.label}  {format_number(item.percent)}%",
                 percent=item.percent,
-                color=_SLICE_COLORS.get(item.key, COLORS["text_muted"]),
+                color=COLORS[_SLICE_COLORS.get(item.key, "text_muted")],
+                key=item.key,
             )
             for item in payload.target_slices
         ),
@@ -259,17 +265,24 @@ def to_dashboard(
 
 def _kpi(stat) -> KpiMetric:
     presentation = _KPI_PRESENTATION.get(stat.key, _KPI_PRESENTATION["age"])
+    color = COLORS[presentation["color"]]
+    background = (
+        COLORS["primary_light"]
+        if presentation["background"] == "primary_light"
+        else rgba(COLORS[presentation["background"]], 0.12)
+    )
     return KpiMetric(
         label=stat.label,
         value=format_number(stat.value, stat.decimals),
         unit=stat.unit,
         icon=presentation["icon"],
-        icon_color=presentation["color"],
-        icon_background=presentation["background"],
+        icon_color=color,
+        icon_background=background,
         badge=stat.badge,
-        badge_color=presentation["badge_color"],
+        badge_color=COLORS[presentation["badge_color"]],
         sparkline=tuple(stat.series),
-        sparkline_color=presentation["sparkline"],
+        sparkline_color=COLORS[presentation["sparkline"]],
+        key=stat.key,
     )
 
 
@@ -281,8 +294,56 @@ def _comparison(row) -> ComparisonRow:
         positive=f"{format_number(row.positive, row.decimals)}{suffix}",
         negative=format_number(row.negative, row.decimals),
         delta=_signed(row.delta, row.decimals),
-        delta_color=_COMPARISON_COLORS.get(row.key, COLORS["text_secondary"]),
+        delta_color=COLORS[_COMPARISON_COLORS.get(row.key, "text_secondary")],
         emphasize=row.key == "thalach",
+        key=row.key,
+    )
+
+
+def retheme_dashboard(data: DashboardData) -> DashboardData:
+    """Refresh semantic accent colours after switching the application theme."""
+
+    return replace(
+        data,
+        kpis=tuple(_kpi_from_metric(metric) for metric in data.kpis),
+        risk_factors=tuple(
+            replace(
+                factor,
+                color=COLORS[_RISK_FACTOR_COLORS.get(factor.key, "primary")],
+            )
+            for factor in data.risk_factors
+        ),
+        comparisons=tuple(
+            replace(
+                row,
+                delta_color=COLORS[_COMPARISON_COLORS.get(row.key, "text_secondary")],
+            )
+            for row in data.comparisons
+        ),
+        risk_slices=tuple(
+            replace(
+                item,
+                color=COLORS[_SLICE_COLORS.get(item.key, "text_muted")],
+            )
+            for item in data.risk_slices
+        ),
+    )
+
+
+def _kpi_from_metric(metric: KpiMetric) -> KpiMetric:
+    presentation = _KPI_PRESENTATION.get(metric.key, _KPI_PRESENTATION["age"])
+    color = COLORS[presentation["color"]]
+    background = (
+        COLORS["primary_light"]
+        if presentation["background"] == "primary_light"
+        else rgba(COLORS[presentation["background"]], 0.12)
+    )
+    return replace(
+        metric,
+        icon_color=color,
+        icon_background=background,
+        badge_color=COLORS[presentation["badge_color"]],
+        sparkline_color=COLORS[presentation["sparkline"]],
     )
 
 

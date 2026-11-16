@@ -229,6 +229,28 @@ def draw_icon(
         bell.closeSubpath()
         painter.drawPath(bell)
         painter.drawArc(QRectF(9.8, 16.4, 4.4, 4.4), 180 * 16, 180 * 16)
+    elif kind == "sun":
+        painter.setBrush(color)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QPointF(12, 12), 4.0, 4.0)
+        painter.setPen(QPen(color, 1.8))
+        for start, end in (
+            ((12, 2.8), (12, 6.0)),
+            ((12, 18.0), (12, 21.2)),
+            ((2.8, 12), (6.0, 12)),
+            ((18.0, 12), (21.2, 12)),
+            ((5.5, 5.5), (7.8, 7.8)),
+            ((16.2, 16.2), (18.5, 18.5)),
+            ((18.5, 5.5), (16.2, 7.8)),
+            ((7.8, 16.2), (5.5, 18.5)),
+        ):
+            painter.drawLine(QPointF(*start), QPointF(*end))
+    elif kind == "moon":
+        painter.setBrush(color)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QPointF(11.0, 12.0), 7.0, 7.0)
+        painter.setBrush(QColor(COLORS["surface"]))
+        painter.drawEllipse(QPointF(14.5, 8.5), 6.5, 6.5)
     elif kind == "chevron-right":
         painter.drawLine(QPointF(9.4, 5.6), QPointF(15.8, 12))
         painter.drawLine(QPointF(15.8, 12), QPointF(9.4, 18.4))

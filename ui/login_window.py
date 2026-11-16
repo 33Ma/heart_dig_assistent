@@ -33,11 +33,11 @@ from PySide6.QtWidgets import (
 from algorithm.dataset import DEFAULT_DATA_PATH
 from core.auth import DEMO_ACCOUNT, DEMO_PASSWORD, authenticate
 
-from ui.dashboard_data import DashboardData
+from ui.dashboard_data import DashboardData, retheme_dashboard
 from ui.data_loader import DataLoader
 from ui.icons import BrandMark, IconWidget, make_icon_pixmap
 from ui.main_dashboard import MainDashboard
-from ui.theme import COLORS, DEFAULT_FONT
+from ui.theme import COLORS, DEFAULT_FONT, theme_manager
 
 LogoMark = BrandMark
 
@@ -351,6 +351,25 @@ class LoginPage(QWidget):
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card_layout.addWidget(footer)
 
+        self.theme_button = QToolButton(self)
+        self.theme_button.setObjectName("loginThemeToggle")
+        self.theme_button.setFixedSize(36, 36)
+        self.theme_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.theme_button.clicked.connect(theme_manager.toggle)
+        theme_manager.changed.connect(self._update_theme_button)
+        self._update_theme_button(theme_manager.mode)
+
+    def _update_theme_button(self, mode: str) -> None:
+        icon = "sun" if mode == "dark" else "moon"
+        self.theme_button.setIcon(make_icon_pixmap(icon, 16, COLORS["text_secondary"]))
+        self.theme_button.setIconSize(QPixmap(16, 16).size())
+        self.theme_button.setToolTip("切换到浅色主题" if mode == "dark" else "切换到深色主题")
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        if hasattr(self, "theme_button"):
+            self.theme_button.move(self.width() - 58, 18)
+
     def paintEvent(self, event) -> None:  # noqa: N802
         del event
         painter = QPainter(self)
@@ -472,19 +491,9 @@ class Widget(QWidget):
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
+        self._root_layout = root
 
-        self.stack = QStackedWidget(self)
-        self.login_page = LoginPage(self)
-        self.login_page.setStyleSheet(self._stylesheet())
-        self.dashboard = MainDashboard(parent=self)
-        self.stack.addWidget(self.login_page)
-        self.stack.addWidget(self.dashboard)
-        root.addWidget(self.stack)
-
-        self.login_page.authenticated.connect(self._show_main)
-        self.dashboard.logout_requested.connect(self._show_login)
-        self.dashboard.retry_requested.connect(self._reload_dashboard)
-        self.dashboard.import_requested.connect(self._import_dataset)
+        self._build_pages()
 
         self.loader = DataLoader(self)
         self.loader.loaded.connect(self._on_dashboard_loaded)
@@ -504,6 +513,59 @@ class Widget(QWidget):
         self._import_name: str | None = None
         self._has_data = False
         self._dialog_dir = DEFAULT_DATA_PATH.parent
+        theme_manager.changed.connect(self._on_theme_changed)
+
+    def _build_pages(self) -> None:
+        self.stack = QStackedWidget(self)
+        self.login_page = LoginPage(self)
+        self.login_page.setStyleSheet(self._stylesheet())
+        self.dashboard = MainDashboard(parent=self)
+        self.stack.addWidget(self.login_page)
+        self.stack.addWidget(self.dashboard)
+        self._root_layout.addWidget(self.stack)
+
+        self.login_page.authenticated.connect(self._show_main)
+        self.dashboard.logout_requested.connect(self._show_login)
+        self.dashboard.retry_requested.connect(self._reload_dashboard)
+        self.dashboard.import_requested.connect(self._import_dataset)
+
+    def _on_theme_changed(self, _mode: str) -> None:
+        """Rebuild themed pages while preserving the current session state."""
+
+        old_login = self.login_page
+        old_dashboard = self.dashboard
+        showing_dashboard = self.stack.currentWidget() is old_dashboard
+        account = old_dashboard._account
+        data = old_dashboard.data
+        showing_sample_analysis = old_dashboard._sample_page is not None
+        sample_regression = old_dashboard._sample_regression_result
+        sample_forest = old_dashboard._sample_forest_result
+        sample_neural = old_dashboard._sample_neural_result
+        sample_dataset = old_dashboard._sample_dataset
+        login_account = old_login.account_field.text()
+        login_password = old_login.password_field.line_edit.text()
+        remember = old_login.remember.isChecked()
+
+        self._root_layout.removeWidget(self.stack)
+        self.stack.deleteLater()
+        self._build_pages()
+
+        self.login_page.account_field.set_text(login_account)
+        self.login_page.password_field.set_text(login_password)
+        self.login_page.remember.setChecked(remember)
+        if showing_dashboard:
+            self.dashboard.set_account(account)
+            if self._has_data:
+                self.dashboard.set_data(retheme_dashboard(data))
+                if showing_sample_analysis:
+                    self.dashboard._sample_regression_result = sample_regression
+                    self.dashboard._sample_forest_result = sample_forest
+                    self.dashboard._sample_neural_result = sample_neural
+                    self.dashboard._sample_dataset = sample_dataset
+                    self.dashboard._show_sample_analysis(cached=True)
+            else:
+                self.dashboard.show_empty()
+            self.stack.setCurrentWidget(self.dashboard)
 
     def _show_main(self, account: str) -> None:
         self.dashboard.set_account(account)
@@ -650,7 +712,7 @@ class Widget(QWidget):
             background: {COLORS["surface"]};
             color: {COLORS["primary"]};
             font-weight: 700;
-            border: 1px solid #E6EDF6;
+            border: 1px solid {COLORS["info_border"]};
         }}
         QLabel#formMessage {{
             border-radius: 9px;
@@ -659,13 +721,13 @@ class Widget(QWidget):
         }}
         QLabel#formMessage[state="error"] {{
             color: {COLORS["danger"]};
-            background: #FFF3F4;
-            border: 1px solid #FFD8DC;
+            background: {COLORS["error_surface"]};
+            border: 1px solid {COLORS["error_border"]};
         }}
         QLabel#formMessage[state="info"] {{
             color: {COLORS["primary"]};
             background: {COLORS["primary_light"]};
-            border: 1px solid #D8E4FF;
+            border: 1px solid {COLORS["info_border"]};
         }}
         QLabel#fieldLabel {{
             color: {COLORS["text"]};
@@ -678,11 +740,11 @@ class Widget(QWidget):
             border-radius: 12px;
         }}
         QFrame#loginField[focused="true"] {{
-            background: #FFFFFF;
+            background: {COLORS["surface"]};
             border: 1px solid {COLORS["primary"]};
         }}
         QFrame#loginField[invalid="true"] {{
-            background: #FFF8F8;
+            background: {COLORS["error_surface"]};
             border: 1px solid {COLORS["danger"]};
         }}
         QLineEdit#fieldInput {{
@@ -713,7 +775,7 @@ class Widget(QWidget):
             padding: 0;
         }}
         QPushButton#linkButton:hover {{
-            color: #1658D8;
+            color: {COLORS["primary_hover"]};
             text-decoration: underline;
         }}
         QCheckBox#rememberCheck {{
@@ -738,20 +800,20 @@ class Widget(QWidget):
         }}
         QPushButton#primaryButton {{
             background: {COLORS["primary"]};
-            color: white;
+            color: {COLORS["surface"]};
             border: none;
             border-radius: 12px;
             font-size: 15px;
             font-weight: 700;
         }}
         QPushButton#primaryButton:hover {{
-            background: #1E60EE;
+            background: {COLORS["primary_hover"]};
         }}
         QPushButton#primaryButton:pressed {{
-            background: #164EC8;
+            background: {COLORS["primary_pressed"]};
         }}
         QPushButton#primaryButton:disabled {{
-            background: #8EABF7;
+            background: {COLORS["primary_disabled"]};
         }}
         QFrame#divider {{
             background: {COLORS["border"]};
@@ -762,7 +824,7 @@ class Widget(QWidget):
             font-size: 10px;
         }}
         QPushButton#secondaryButton {{
-            background: white;
+            background: {COLORS["surface"]};
             color: {COLORS["text"]};
             border: 1px solid {COLORS["border"]};
             border-radius: 12px;
@@ -771,7 +833,7 @@ class Widget(QWidget):
         }}
         QPushButton#secondaryButton:hover {{
             background: {COLORS["input"]};
-            border-color: #BFD0E4;
+            border-color: {COLORS["border_strong"]};
         }}
         QLabel#demoHint {{
             color: {COLORS["primary"]};
@@ -784,8 +846,18 @@ class Widget(QWidget):
             color: {COLORS["text_secondary"]};
             font-size: 10px;
         }}
+        QToolButton#loginThemeToggle {{
+            background: {COLORS["surface"]};
+            border: 1px solid {COLORS["border"]};
+            border-radius: 10px;
+            padding: 0;
+        }}
+        QToolButton#loginThemeToggle:hover {{
+            background: {COLORS["surface_hover"]};
+            border-color: {COLORS["border_strong"]};
+        }}
         QMessageBox {{
-            background: white;
+            background: {COLORS["surface"]};
         }}
         QMessageBox QLabel {{
             color: {COLORS["text"]};
